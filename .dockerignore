@@ -1,0 +1,16 @@
+# dotenv environment variables file
+.env
+.env*
+**/.env
+**/.env*
+
+# Sensitive Deploy Files
+deploy/eb/
+
+# tox
+./.tox
+
+
+# Backend
+backend
+!backend/schema.graphql

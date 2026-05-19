@@ -1,0 +1,39 @@
+import path from 'path';
+
+// eslint-disable-next-line no-undef
+const __filename = new URL(import.meta.url).pathname;
+const __dirname = path.dirname(__filename);
+
+const cssPaths = [
+    path.resolve(__dirname, './node_modules/@ifrc-go/ui/dist/index.css'),
+    path.resolve(__dirname, './app/index.css'),
+];
+
+/** @type {import('stylelint').Config} */
+const config = {
+    extends: [
+        'stylelint-config-standard',
+        'stylelint-config-concentric',
+    ],
+    plugins: [
+        'stylelint-value-no-unknown-custom-properties',
+        "@stylistic/stylelint-plugin"
+    ],
+    rules: {
+        '@stylistic/block-opening-brace-space-before': 'always',
+        'csstools/value-no-unknown-custom-properties': [
+            true,
+            {
+                importFrom: cssPaths,
+            },
+        ],
+        'selector-pseudo-class-no-unknown': [
+            true,
+            {
+                ignorePseudoClasses: ['global'],
+            },
+        ],
+    },
+};
+
+export default config;

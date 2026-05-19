@@ -1,0 +1,10 @@
+.root {
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    height: 100vh;
+
+    .page-content {
+        flex-grow: 1;
+    }
+}

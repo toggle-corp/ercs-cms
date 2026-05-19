@@ -1,0 +1,11 @@
+.smart-nav-link {
+    display: contents;
+
+    &.active {
+        .button-layout {
+            opacity: 1;
+            color: var(--go-ui-color-red  );
+        }
+    }
+
+}
