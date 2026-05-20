@@ -22,19 +22,68 @@ const login: RouteConfig = {
     visibility: 'is-not-authenticated',
 };
 
-function child(route: RouteConfig, path: string): RouteConfig {
-    const found = route.children?.find((c) => c.path === path);
-    if (!found) throw new Error(`Child route "${path}" not found in "${route.path}"`);
-    return {
-        ...found,
-        path: `${route.path}/${path}`,
-    };
-}
+const teams: RouteConfig = {
+    index: true,
+    path: '/teams',
+    load: () => import('#views/Teams'),
+    visibility: 'is-authenticated',
+};
+
+const users: RouteConfig = {
+    index: true,
+    path: '/users',
+    load: () => import('#views/Users'),
+    visibility: 'is-authenticated',
+};
+const ourWorks: RouteConfig = {
+    index: true,
+    path: '/our-works',
+    load: () => import('#views/OurWorks'),
+    visibility: 'is-authenticated',
+};
+const preparedness: RouteConfig = {
+    index: true,
+    path: '/preparedness',
+    load: () => import('#views/Preparedness'),
+    visibility: 'is-authenticated',
+};
+const dataAndReports: RouteConfig = {
+    index: true,
+    path: '/data-and-reports',
+    load: () => import('#views/DataAndReports'),
+    visibility: 'is-authenticated',
+};
+
+const documents: RouteConfig = {
+    index: true,
+    path: '/documents',
+    load: () => import('#views/Documents'),
+    visibility: 'is-authenticated',
+};
+const onlineInteractive: RouteConfig = {
+    index: true,
+    path: '/online-interactive',
+    load: () => import('#views/OnlineInteractive'),
+    visibility: 'is-authenticated',
+};
+const galleries: RouteConfig = {
+    index: true,
+    path: '/galleries',
+    load: () => import('#views/Galleries'),
+    visibility: 'is-authenticated',
+};
 
 const routes = {
     home,
     login,
-
+    teams,
+    users,
+    ourWorks,
+    preparedness,
+    dataAndReports,
+    documents,
+    onlineInteractive,
+    galleries,
 } satisfies Record<string, RouteConfig>;
 
 export type RouteKeys = keyof typeof routes;

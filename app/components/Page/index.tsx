@@ -1,118 +1,46 @@
-import {
-    type RefObject,
-    useEffect,
-} from 'react';
-import {
-    ListView,
-    PageContainer,
-    PageHeader,
-} from '@ifrc-go/ui';
-import {
-    _cs,
-    isDefined,
-    isNotDefined,
-} from '@togglecorp/fujs';
+import { ListView } from '@ifrc-go/ui';
+import { _cs } from '@togglecorp/fujs';
 
 import styles from './styles.module.css';
 
 interface Props {
     className?: string;
-    title?: string;
-    actions?: React.ReactNode;
-    heading?: React.ReactNode;
-    description?: React.ReactNode;
-    mainSectionContainerClassName?: string;
-    breadCrumbs?: React.ReactNode;
-    info?: React.ReactNode;
     children?: React.ReactNode;
-    mainSectionClassName?: string;
-    wikiLink?: React.ReactNode;
-    withBackgroundColorInMainSection?: boolean;
-    elementRef?: RefObject<HTMLDivElement | null>;
-    blockingContent?: React.ReactNode;
-    beforeHeaderContent?: React.ReactNode;
+    leftPaneContent?: React.ReactNode;
+    leftPaneContainerClassName?: string;
 }
-
 function Page(props: Props) {
     const {
         className,
-        title,
-        actions,
-        heading,
-        description,
-        breadCrumbs,
-        info,
         children,
-        mainSectionContainerClassName,
-        mainSectionClassName,
-        wikiLink,
-        withBackgroundColorInMainSection,
-        elementRef,
-        blockingContent,
-        beforeHeaderContent,
+        leftPaneContent,
+        leftPaneContainerClassName,
     } = props;
 
-    useEffect(() => {
-        if (isDefined(title)) {
-            document.title = title;
-        }
-    }, [title]);
-
-    const showPageContainer = !!breadCrumbs
-        || !!heading
-        || !!description
-        || !!info
-        || !!actions
-        || !!wikiLink;
-
     return (
-        <div
-            className={_cs(
-                styles.page,
-                className,
-            )}
-            ref={elementRef}
+        <ListView
+            layout="grid"
+            withSidebar
+            sidebarPosition="start"
+            className={_cs(className, styles.page)}
+            spacing="none"
         >
-            {beforeHeaderContent && (
-                <PageContainer>
-                    {beforeHeaderContent}
-                </PageContainer>
-            )}
-            {isNotDefined(blockingContent) && showPageContainer && (
-                <PageHeader
-                    className={_cs(
-                        styles.pageHeader,
-                        className,
-                    )}
-                    breadCrumbs={breadCrumbs}
-                    actions={actions}
-                    heading={heading}
-                    description={description}
-                    info={info}
-                />
-            )}
-            {isNotDefined(blockingContent) && (
-                <PageContainer
-                    contentAs="main"
-                    className={_cs(
-                        styles.mainSectionContainer,
-                        mainSectionContainerClassName,
-                        withBackgroundColorInMainSection && styles.withBackgroundColor,
-                    )}
-                    contentClassName={_cs(
-                        styles.mainSection,
-                        mainSectionClassName,
-                    )}
+            {leftPaneContent && (
+                <ListView
+                    layout="block"
+                    withBackground
+                    className={leftPaneContainerClassName}
                 >
-                    <ListView
-                        layout="block"
-                        spacing="4xl"
-                    >
-                        { children }
-                    </ListView>
-                </PageContainer>
+                    {leftPaneContent}
+                </ListView>
             )}
-        </div>
+            <ListView
+                withBackground
+                layout="block"
+            >
+                {children}
+            </ListView>
+        </ListView>
     );
 }
 

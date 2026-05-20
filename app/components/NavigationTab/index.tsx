@@ -13,6 +13,7 @@ import {
     type TabLayoutProps,
 } from '@ifrc-go/ui';
 import { NavigationTabContext } from '@ifrc-go/ui/contexts';
+import { _cs } from '@togglecorp/fujs';
 
 import type { RouteKeys } from '#root/config/routes';
 import useRouteMatching, { type Attrs } from '#root/hooks/useRouteMatching';
@@ -37,6 +38,7 @@ type CommonProps = Omit<TabLayoutProps, 'styleVariant' | 'colorVariant'> & {
     withEllipsizedContent?: boolean;
     withLinkIcon?: boolean;
     withUnderline?: boolean;
+    activeClassName?: string;
 }
 
 export type Props = CommonProps & (InternalLinkProps | ExternalLinkProps);
@@ -63,6 +65,7 @@ function NavigationTab(props: Props) {
         stepCompleted,
         isFirstStep,
         isLastStep,
+        activeClassName,
         ...otherProps
     } = props;
 
@@ -77,7 +80,7 @@ function NavigationTab(props: Props) {
 
     const content = (
         <TabLayout
-            className={className}
+            className={_cs(className, isActive && activeClassName)}
             colorVariant={colorVariant}
             styleVariant={styleVariant}
             before={before}

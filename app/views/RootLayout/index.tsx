@@ -6,6 +6,7 @@ import { Outlet } from 'react-router';
 import { isDefined } from '@togglecorp/fujs';
 import { gql } from 'urql';
 
+import PreloadMessage from '#components/PreloadMessage';
 import { api } from '#config';
 import UserContext from '#contexts/UserContext';
 import { useMeQuery } from '#generated/types/graphql';
@@ -22,15 +23,15 @@ const fetchHealth = fetch(`${api}/health-check/?format=json`, {
 const ME_QUERY = gql`
     query Me {
         me {
-    role
-    regionId
-    mfaEnabled
-    isActive
-    id
-    fullName
-    email
-    createdAt
-  }
+            role
+            regionId
+            mfaEnabled
+            isActive
+            id
+            fullName
+            email
+            createdAt
+        }
     }
 `;
 
@@ -47,6 +48,14 @@ function RootLayout() {
             setUser(data.me);
         }
     }, [fetching, data, setUser]);
+
+    if (fetching) {
+        return (
+            <PreloadMessage>
+                Checking user session..
+            </PreloadMessage>
+        );
+    }
 
     return (
         <div className={styles.root}>
