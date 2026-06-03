@@ -25,7 +25,21 @@ const login: RouteConfig = {
 const teams: RouteConfig = {
     index: true,
     path: '/teams',
-    load: () => import('#views/Teams'),
+    load: () => import('#views/Teams/TeamsList'),
+    visibility: 'is-authenticated',
+};
+
+const createTeam: RouteConfig = {
+    index: true,
+    path: '/teams/new',
+    load: () => import('#views/Teams/TeamForm'),
+    visibility: 'is-authenticated',
+};
+
+const editTeam: RouteConfig = {
+    index: true,
+    path: '/teams/:id/edit',
+    load: () => import('#views/Teams/TeamForm'),
     visibility: 'is-authenticated',
 };
 
@@ -77,6 +91,8 @@ const routes = {
     home,
     login,
     teams,
+    createTeam,
+    editTeam,
     users,
     ourWorks,
     preparedness,

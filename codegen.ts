@@ -21,6 +21,7 @@ const config: CodegenConfig = {
                 gqlImport: 'urql#gql',
                 dedupeFragments: true,
                 skipTypename: true,
+                onlyOperationTypes: false,
 
                 // FIXME: Enable this later
                 // enumsAsTypes: true,

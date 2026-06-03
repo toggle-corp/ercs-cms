@@ -1,0 +1,43 @@
+import {
+    useCallback,
+    useMemo,
+} from 'react';
+import { useSearchParams } from 'react-router';
+
+const PAGE_SIZE = 10;
+
+function usePagination() {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const pageFromParams = Number(searchParams.get('page')) || 1;
+
+    const page = pageFromParams;
+    const offset = (page - 1) * PAGE_SIZE;
+
+    const setPage = useCallback(
+        (newPage: number) => {
+            const nextParams = new URLSearchParams(searchParams);
+            nextParams.set('page', String(newPage));
+            setSearchParams(nextParams);
+        },
+        [searchParams, setSearchParams],
+    );
+
+    const variables = useMemo(
+        () => ({
+            pagination: {
+                limit: PAGE_SIZE,
+                offset,
+            },
+        }),
+        [offset],
+    );
+
+    return {
+        page,
+        setPage,
+        variables,
+        pageSize: PAGE_SIZE,
+    };
+}
+
+export default usePagination;
