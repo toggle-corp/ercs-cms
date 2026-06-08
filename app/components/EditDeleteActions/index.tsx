@@ -1,0 +1,62 @@
+import { useCallback } from 'react';
+import {
+    DeleteBinLineIcon,
+    EditTwoLineIcon,
+} from '@ifrc-go/icons';
+import { TableActions } from '@ifrc-go/ui';
+
+import DropdownMenuItem from '#components/DropdownMenuItem';
+import useRouting, { type RoutesMap } from '#hooks/useRouting';
+
+export interface Props {
+    id: string;
+    onDelete: (id: string) => void;
+    itemTitle: string;
+    to: keyof RoutesMap;
+}
+
+function EditDeleteActions(props: Props) {
+    const {
+        id,
+        onDelete,
+        itemTitle,
+        to,
+    } = props;
+
+    const navigate = useRouting();
+
+    const handleEditClick = useCallback(() => {
+        navigate(to, { id });
+    }, [navigate, to, id]);
+
+    return (
+        <TableActions
+            persistent
+            extraActions={(
+                <>
+                    <DropdownMenuItem
+                        name={undefined}
+                        type="button"
+                        before={<EditTwoLineIcon />}
+                        onClick={handleEditClick}
+                        persist
+                    >
+                        Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        name={id}
+                        onConfirm={onDelete}
+                        type="confirm-button"
+                        before={<DeleteBinLineIcon />}
+                        confirmMessage={`Are you sure you want to delete ${`"${itemTitle}"` || 'this item'}? This action cannot be undone.`}
+                        persist
+                    >
+                        Delete
+                    </DropdownMenuItem>
+                </>
+            )}
+        />
+    );
+}
+
+export default EditDeleteActions;
