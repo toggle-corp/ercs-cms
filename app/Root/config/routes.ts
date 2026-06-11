@@ -1,11 +1,11 @@
 type Visibility = 'is-authenticated' | 'is-not-authenticated' | 'is-anything';
 
 export interface RouteConfig {
-    index?: boolean;
-    path?: string;
-    load: () => Promise<{ default: () => React.JSX.Element | null }>;
-    visibility: Visibility;
-    children?: RouteConfig[];
+  index?: boolean;
+  path?: string;
+  load: () => Promise<{ default: () => React.JSX.Element | null }>;
+  visibility: Visibility;
+  children?: RouteConfig[];
 }
 
 const home: RouteConfig = {
@@ -46,9 +46,22 @@ const editTeam: RouteConfig = {
 const users: RouteConfig = {
     index: true,
     path: '/users',
-    load: () => import('#views/Users'),
+    load: () => import('#views/Users/UsersList'),
     visibility: 'is-authenticated',
 };
+
+const createUser: RouteConfig = {
+    path: '/users/new',
+    load: () => import('#views/Users/UserForm'),
+    visibility: 'is-authenticated',
+};
+
+const editUser: RouteConfig = {
+    path: '/users/:id/edit',
+    load: () => import('#views/Users/UserForm'),
+    visibility: 'is-authenticated',
+};
+
 const ourWorks: RouteConfig = {
     index: true,
     path: '/our-works',
@@ -94,6 +107,8 @@ const routes = {
     createTeam,
     editTeam,
     users,
+    createUser,
+    editUser,
     ourWorks,
     preparedness,
     dataAndReports,

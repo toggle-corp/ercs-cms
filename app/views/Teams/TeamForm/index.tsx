@@ -1,4 +1,7 @@
-import { useCallback } from 'react';
+import {
+    useCallback,
+    useEffect,
+} from 'react';
 import { useParams } from 'react-router';
 import {
     BlockLoading,
@@ -111,9 +114,12 @@ function TeamForm() {
     const error = getErrorObject(formError);
 
     const teamData = data?.team;
-    if (!teamDetailFetch && isDefined(teamData)) {
-        setValue(removeNull(teamData));
-    }
+
+    useEffect(() => {
+        if (!teamDetailFetch && isDefined(teamData)) {
+            setValue(removeNull(teamData));
+        }
+    }, [teamDetailFetch, teamData, setValue]);
 
     if (teamDetailFetch || createPending || updatePending) {
         return (
