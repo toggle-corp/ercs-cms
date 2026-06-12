@@ -25,21 +25,37 @@ const login: RouteConfig = {
 const teams: RouteConfig = {
     index: true,
     path: '/teams',
-    load: () => import('#views/Teams/TeamsList'),
+    load: () => import('#views/Teams/index'),
     visibility: 'is-authenticated',
 };
 
 const createTeam: RouteConfig = {
-    index: true,
     path: '/teams/new',
     load: () => import('#views/Teams/TeamForm'),
     visibility: 'is-authenticated',
 };
 
 const editTeam: RouteConfig = {
-    index: true,
     path: '/teams/:id/edit',
     load: () => import('#views/Teams/TeamForm'),
+    visibility: 'is-authenticated',
+};
+
+const teamMembers: RouteConfig = {
+    path: '/teams/:id/team-members/',
+    load: () => import('#views/Teams/TeamMembers'),
+    visibility: 'is-authenticated',
+};
+
+const createTeamMember: RouteConfig = {
+    path: '/teams/:id/team-members/new',
+    load: () => import('#views/Teams/TeamMembers/TeamMemberForm'),
+    visibility: 'is-authenticated',
+};
+
+const editTeamMember: RouteConfig = {
+    path: '/teams/:id/team-members/:member/edit',
+    load: () => import('#views/Teams/TeamMembers/TeamMemberForm'),
     visibility: 'is-authenticated',
 };
 
@@ -106,6 +122,8 @@ const routes = {
     teams,
     createTeam,
     editTeam,
+    teamMembers,
+    createTeamMember,
     users,
     createUser,
     editUser,
@@ -115,6 +133,7 @@ const routes = {
     documents,
     onlineInteractive,
     galleries,
+    editTeamMember,
 } satisfies Record<string, RouteConfig>;
 
 export type RouteKeys = keyof typeof routes;

@@ -15,11 +15,13 @@ import {
     createElementColumn,
     createStringColumn,
 } from '@ifrc-go/ui/utils';
+import { isDefined } from '@togglecorp/fujs';
 
 import DateTime, { type DateTimeProps } from '#components/DateTime';
 import EditDeleteActions, { type Props as EditDeleteActionsProps } from '#components/EditDeleteActions';
 import Link from '#components/Link';
 import {
+    AdminAreaLevel,
     useDeleteUserMutation,
     type UserRole,
     type UsersQuery,
@@ -31,7 +33,7 @@ import useRegionMap from '#hooks/useRegionMap';
 import useRouting from '#hooks/useRouting';
 import { idSelector } from '#utils/common';
 
-import UserFilter from './UserFilter';
+import UserListFilters from './UserListFilters';
 
 import styles from './styles.module.css';
 
@@ -131,7 +133,7 @@ function UsersList() {
     });
     const [, deleteUser] = useDeleteUserMutation();
 
-    const regionMap = useRegionMap();
+    const regionMap = useRegionMap(AdminAreaLevel.Region);
 
     const pageSize = limit;
 
@@ -184,7 +186,7 @@ function UsersList() {
         createStringColumn<UsersListItem, string | number>(
             'regionId',
             'Region',
-            (item) => (item.regionId ? regionMap[item.regionId] : undefined) ?? '-',
+            (item) => (isDefined(item.regionId) ? regionMap[item.regionId] : '-'),
         ),
         createElementColumn<UsersListItem, string | number, DateTimeProps>(
             'lastLogin',
@@ -227,7 +229,7 @@ function UsersList() {
             withPadding
             heading="Users"
             filters={(
-                <UserFilter
+                <UserListFilters
                     value={rawFilter}
                     onChange={setFilterField}
                 />

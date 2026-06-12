@@ -8,6 +8,9 @@ import {
 import {
     idSelector,
     nameSelector,
+    type REGION_LEVEL,
+    type WOREDA_LEVEL,
+    type ZONE_LEVEL,
 } from '#utils/common';
 
 export interface Props<NAME extends string | undefined> {
@@ -18,21 +21,25 @@ export interface Props<NAME extends string | undefined> {
     placeholder?: string;
     error?: string;
     disabled?: boolean;
+    level: REGION_LEVEL | ZONE_LEVEL | WOREDA_LEVEL;
 }
 
-function RegionSelectInput<NAME extends string | undefined>({
-    className,
-    name,
-    value,
-    onChange,
-    placeholder,
-    error,
-    disabled,
-}: Props<NAME>) {
+function RegionSelectInput<NAME extends string | undefined>(props: Props<NAME>) {
+    const {
+        className,
+        name,
+        value,
+        onChange,
+        placeholder,
+        error,
+        disabled,
+        level = AdminAreaLevel.Region,
+    } = props;
+
     const [{ data: adminAreasData }] = useAdminAreasQuery({
         variables: {
             filters: {
-                level: AdminAreaLevel.Region,
+                level,
             },
         },
     });

@@ -5,7 +5,10 @@ import {
 import { type EntriesAsList } from '@togglecorp/toggle-form';
 
 import RegionSelectInput from '#components/RegionSelectInput';
-import { useEnumsQuery } from '#generated/types/graphql';
+import {
+    AdminAreaLevel,
+    useEnumsQuery,
+} from '#generated/types/graphql';
 import {
     keySelector,
     labelSelector,
@@ -29,6 +32,7 @@ function UserFilter({ value, onChange }: Props) {
         <>
             <RegionSelectInput
                 name="region"
+                level={AdminAreaLevel.Region}
                 placeholder="Region"
                 value={value.region}
                 onChange={onChange}

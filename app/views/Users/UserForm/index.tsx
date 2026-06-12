@@ -30,6 +30,7 @@ import {
 
 import RegionSelectInput from '#components/RegionSelectInput';
 import {
+    AdminAreaLevel,
     useCreateUserMutation,
     useEnumsQuery,
     type UserCreateInput,
@@ -267,6 +268,7 @@ function UserForm() {
                 >
                     <RegionSelectInput
                         name="region"
+                        level={AdminAreaLevel.Region}
                         value={value.region}
                         onChange={setFieldValue}
                         error={error?.region}

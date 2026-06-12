@@ -59,9 +59,7 @@ function RootLayout() {
 
     return (
         <div className={styles.root}>
-            <div className={styles.pageContent}>
-                <Outlet />
-            </div>
+            <Outlet />
         </div>
     );
 }

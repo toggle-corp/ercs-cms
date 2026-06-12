@@ -8,6 +8,7 @@ import {
     Container,
     Pager,
     Table,
+    TextInput,
 } from '@ifrc-go/ui';
 import {
     createDateColumn,
@@ -16,40 +17,60 @@ import {
 } from '@ifrc-go/ui/utils';
 
 import EditDeleteActions, { type Props as EditDeleteActionsProps } from '#components/EditDeleteActions';
+import Link, { type Props as LinkProps } from '#components/Link';
 import {
+    type TeamFilter,
     type TeamsQuery,
     useDeleteTeamMutation,
     useTeamsQuery,
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
-import usePagination from '#hooks/usePagination';
+import useFilterState from '#hooks/useFilterState';
 import useRouting from '#hooks/useRouting';
 import { idSelector } from '#utils/common';
 
 type TeamsListItem = NonNullable<NonNullable<TeamsQuery['teams']>['results'][number] & { no: string }>;
 
+const defaultFilter: TeamFilter = { search: undefined };
+
 function Teams() {
     const {
+        filter,
+        rawFilter,
+        filtered,
+        setFilterField,
         page,
         setPage,
-        pageSize,
-        variables,
-    } = usePagination();
+        limit,
+        offset,
+    } = useFilterState({
+        filter: defaultFilter,
+    });
 
     const alert = useAlert();
     const navigate = useRouting();
 
-    const [{ fetching, data }, reExecuteQuery] = useTeamsQuery({ variables });
+    const queryVariables = useMemo(() => ({
+        pagination: {
+            limit,
+            offset,
+        },
+        filters: {
+            search: filter.search,
+        },
+    }), [limit, offset, filter]);
+
+    const [{ fetching, data }, reExecuteQuery] = useTeamsQuery({ variables: queryVariables });
     const [, deleteTeam] = useDeleteTeamMutation();
 
     const tableData = useMemo(() => (
         data?.teams.results.map((user, index) => {
-            const no = (page - 1) * pageSize + index + 1;
+            const no = (page - 1) * limit + index + 1;
             return {
                 ...user,
                 no,
             };
-        }) as unknown as TeamsListItem[]), [page, data, pageSize]);
+        }) as unknown as TeamsListItem[]), [page, data, limit]);
 
     const onDeleteClick = useCallback(
         (id: string) => {
@@ -74,11 +95,17 @@ function Teams() {
             'Created At',
             (team) => team.createdAt,
         ),
-        createStringColumn<TeamsListItem, string | number>(
-            'name',
-            'Team Name',
-            (team) => team.name,
-        ),
+        createElementColumn<TeamsListItem, string | number,
+            LinkProps>(
+                'name',
+                'Team Name',
+                Link,
+                (_, team) => ({
+                    children: team.name,
+                    to: 'teamMembers',
+                    attrs: { id: team.id },
+                }),
+            ),
         createStringColumn<TeamsListItem, string | number>(
             'description',
             'Description',
@@ -114,11 +141,19 @@ function Teams() {
             withPadding
             heading="Teams"
             headerDescription="Manage a dedicated team committed to delivering impactful solutions"
+            filters={(
+                <TextInput
+                    name="search"
+                    placeholder="Search"
+                    value={rawFilter.search}
+                    onChange={setFilterField}
+                />
+            )}
             footerActions={(
                 <Pager
                     activePage={page}
                     itemsCount={data?.teams.totalCount ?? 0}
-                    maxItemsPerPage={pageSize}
+                    maxItemsPerPage={limit}
                     onActivePageChange={setPage}
                 />
             )}
@@ -137,7 +172,7 @@ function Teams() {
                 keySelector={idSelector}
                 columns={columns}
                 data={tableData}
-                filtered={false}
+                filtered={filtered}
                 pending={fetching}
             />
         </Container>
