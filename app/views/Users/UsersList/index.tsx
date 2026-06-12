@@ -20,10 +20,11 @@ import { isDefined } from '@togglecorp/fujs';
 import DateTime, { type DateTimeProps } from '#components/DateTime';
 import EditDeleteActions, { type Props as EditDeleteActionsProps } from '#components/EditDeleteActions';
 import Link from '#components/Link';
+import StatusCell from '#components/StatusCell';
 import {
     AdminAreaLevel,
     useDeleteUserMutation,
-    type UserRole,
+    type UserFilter,
     type UsersQuery,
     useUsersQuery,
 } from '#generated/types/graphql';
@@ -34,8 +35,6 @@ import useRouting from '#hooks/useRouting';
 import { idSelector } from '#utils/common';
 
 import UserListFilters from './UserListFilters';
-
-import styles from './styles.module.css';
 
 type UsersListItem = NonNullable<NonNullable<UsersQuery['users']>['results'][number]> & { no: string };
 
@@ -68,31 +67,12 @@ function UserInfoCell({ fullName, email }: UserInfoCellProps) {
     );
 }
 
-function StatusCell({ isActive }: { isActive: boolean }) {
-    return (
-        <ListView
-            layout="inline"
-            spacing="sm"
-        >
-            <span
-                className={isActive
-                    ? styles.statusIndicatorActive
-                    : styles.statusIndicatorInactive}
-            />
-            <span>{isActive ? 'Active' : 'Inactive'}</span>
-        </ListView>
-    );
-}
-
-export interface UsersFilterType {
-    region: string | undefined;
-    role: string | undefined;
+export interface UsersFilterType extends Omit<UserFilter, 'isActive'> {
     isActive: string | undefined;
-    search: string | undefined;
 }
 
 const defaultFilter: UsersFilterType = {
-    region: undefined,
+    regions: undefined,
     role: undefined,
     isActive: undefined,
     search: undefined,
@@ -121,8 +101,8 @@ function UsersList() {
             offset,
         },
         filters: {
-            regions: filter.region ? [filter.region] : undefined,
-            role: (filter.role as UserRole) ?? undefined,
+            regions: filter.regions?.length === 0 ? undefined : filter.regions,
+            role: filter.role ?? undefined,
             isActive: filter.isActive !== undefined ? filter.isActive === 'true' : undefined,
             search: filter.search || undefined,
         },

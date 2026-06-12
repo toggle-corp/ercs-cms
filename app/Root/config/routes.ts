@@ -81,9 +81,22 @@ const editUser: RouteConfig = {
 const ourWorks: RouteConfig = {
     index: true,
     path: '/our-works',
-    load: () => import('#views/OurWorks'),
+    load: () => import('#views/OurWorks/WorksList'),
     visibility: 'is-authenticated',
 };
+
+const createWorks: RouteConfig = {
+    path: '/our-works/new',
+    load: () => import('#views/OurWorks/WorksForm'),
+    visibility: 'is-authenticated',
+};
+
+const editWorks: RouteConfig = {
+    path: '/our-works/:id/edit',
+    load: () => import('#views/OurWorks/WorksForm'),
+    visibility: 'is-authenticated',
+};
+
 const preparedness: RouteConfig = {
     index: true,
     path: '/preparedness',
@@ -128,6 +141,8 @@ const routes = {
     createUser,
     editUser,
     ourWorks,
+    createWorks,
+    editWorks,
     preparedness,
     dataAndReports,
     documents,
