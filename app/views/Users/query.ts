@@ -93,11 +93,6 @@ const DELETE_USER = gql`
                     id
                 }
             }
-            ... on OperationInfo {
-                messages {
-                    message
-                }
-            }
         }
     }
 `;

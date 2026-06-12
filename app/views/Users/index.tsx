@@ -32,7 +32,10 @@ import useAlert from '#hooks/useAlert';
 import useFilterState from '#hooks/useFilterState';
 import useRegionMap from '#hooks/useRegionMap';
 import useRouting from '#hooks/useRouting';
-import { idSelector } from '#utils/common';
+import {
+    errorMessage,
+    idSelector,
+} from '#utils/common';
 
 import UserListFilters from './UserListFilters';
 
@@ -129,10 +132,15 @@ function UsersList() {
     const onDeleteClick = useCallback(
         (id: string) => {
             deleteUser({ id }).then((resp) => {
-                if (resp.data?.deleteUser) {
+                const result = resp.data?.deleteUser;
+                if (result?.ok) {
                     reExecuteQuery();
                     alert.show('User deleted successfully', { variant: 'success' });
+                } else {
+                    alert.show(errorMessage, { variant: 'danger' });
                 }
+            }).catch(() => {
+                alert.show(errorMessage, { variant: 'danger' });
             });
         },
         [deleteUser, reExecuteQuery, alert],

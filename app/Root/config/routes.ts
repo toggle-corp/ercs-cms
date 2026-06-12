@@ -1,11 +1,11 @@
 type Visibility = 'is-authenticated' | 'is-not-authenticated' | 'is-anything';
 
 export interface RouteConfig {
-  index?: boolean;
-  path?: string;
-  load: () => Promise<{ default: () => React.JSX.Element | null }>;
-  visibility: Visibility;
-  children?: RouteConfig[];
+    index?: boolean;
+    path?: string;
+    load: () => Promise<{ default: () => React.JSX.Element | null }>;
+    visibility: Visibility;
+    children?: RouteConfig[];
 }
 
 const home: RouteConfig = {
@@ -62,7 +62,7 @@ const editTeamMember: RouteConfig = {
 const users: RouteConfig = {
     index: true,
     path: '/users',
-    load: () => import('#views/Users/UsersList'),
+    load: () => import('#views/Users'),
     visibility: 'is-authenticated',
 };
 
@@ -81,7 +81,7 @@ const editUser: RouteConfig = {
 const ourWorks: RouteConfig = {
     index: true,
     path: '/our-works',
-    load: () => import('#views/OurWorks/WorksList'),
+    load: () => import('#views/OurWorks'),
     visibility: 'is-authenticated',
 };
 
@@ -103,10 +103,30 @@ const preparedness: RouteConfig = {
     load: () => import('#views/Preparedness'),
     visibility: 'is-authenticated',
 };
+
+const createPreparedness: RouteConfig = {
+    path: '/preparedness/new',
+    load: () => import('#views/Preparedness/PreparednessForm'),
+    visibility: 'is-authenticated',
+};
+
+const editPreparedness: RouteConfig = {
+    path: '/preparedness/:id/edit',
+    load: () => import('#views/Preparedness/PreparednessForm'),
+    visibility: 'is-authenticated',
+};
+
 const dataAndReports: RouteConfig = {
     index: true,
     path: '/data-and-reports',
     load: () => import('#views/DataAndReports'),
+    visibility: 'is-authenticated',
+};
+
+const capacityAndResources: RouteConfig = {
+    index: true,
+    path: '/capacity-and-resources',
+    load: () => import('#views/CapacityAndResources'),
     visibility: 'is-authenticated',
 };
 
@@ -144,7 +164,10 @@ const routes = {
     createWorks,
     editWorks,
     preparedness,
+    createPreparedness,
+    editPreparedness,
     dataAndReports,
+    capacityAndResources,
     documents,
     onlineInteractive,
     galleries,

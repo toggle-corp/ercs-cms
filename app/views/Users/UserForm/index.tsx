@@ -41,9 +41,11 @@ import {
 import useAlert from '#hooks/useAlert';
 import useRouting from '#hooks/useRouting';
 import {
+    errorMessage,
     keySelector,
     labelSelector,
     statusOptions,
+    transformToFormError,
     valueSelector,
 } from '#utils/common';
 
@@ -105,50 +107,51 @@ function UserForm() {
 
     const pending = createPending || updatePending || userDetailFetch;
 
-    const handleMutation = useCallback(async (mutationData: PartialFormType) => {
-        const redirectPath = 'users';
-        const alertMessage = `User ${isDefined(id) ? 'updated' : 'created'} successfully`;
+    const handleCreate = useCallback(async (mutationData: PartialFormType) => {
+        const createPayload = removeNull(mutationData) as unknown as UserCreateInput;
+        const res = await createUserMutate({ data: createPayload });
+        const result = res.data?.createUser;
 
-        if (isDefined(id)) {
-            const updatePayload = Object.fromEntries(
-                Object.entries(removeNull(mutationData)).filter(([key]) => key !== 'email'),
-            ) as UserUpdateInput;
-
-            const res = await updateUserMutate({
-                id,
-                data: updatePayload,
-            });
-            const result = res.data?.updateUser;
-            if (isDefined(result) && result.ok) {
-                navigate(redirectPath);
-                alert.show(alertMessage, { variant: 'success' });
-            } else if (isDefined(result) && isDefined(result.errors)) {
-                setError(result.errors);
-                alert.show(result.errors[0]?.messages, { variant: 'danger' });
-            }
+        if (isDefined(result) && result.ok) {
+            navigate('users');
+            alert.show('User created successfully', { variant: 'success' });
+        } else if (isDefined(result) && isDefined(result.errors)) {
+            setError(transformToFormError(result.errors));
+            alert.show(errorMessage, { variant: 'danger' });
         } else {
-            const createPayload = removeNull(mutationData) as unknown as UserCreateInput;
-            const res = await createUserMutate({
-                data: createPayload,
-            });
-            const result = res.data?.createUser;
-            if (isDefined(result) && result.ok) {
-                navigate(redirectPath);
-                alert.show(alertMessage, { variant: 'success' });
-            } else if (isDefined(result) && isDefined(result.errors)) {
-                setError(result.errors);
-                alert.show(result.errors[0]?.messages, { variant: 'danger' });
-            }
+            alert.show(errorMessage, { variant: 'danger' });
         }
-    }, [alert, updateUserMutate, id, navigate, setError, createUserMutate]);
+    }, [createUserMutate, navigate, alert, setError]);
+
+    const handleUpdate = useCallback(async (mutationData: PartialFormType) => {
+        if (isNotDefined(id)) {
+            return;
+        }
+        const updatePayload = Object.fromEntries(
+            Object.entries(removeNull(mutationData)).filter(([key]) => key !== 'email'),
+        ) as UserUpdateInput;
+
+        const res = await updateUserMutate({ id, data: updatePayload });
+        const result = res.data?.updateUser;
+
+        if (isDefined(result) && result.ok) {
+            navigate('users');
+            alert.show('User updated successfully', { variant: 'success' });
+        } else if (isDefined(result) && isDefined(result.errors)) {
+            setError(transformToFormError(result.errors));
+            alert.show(errorMessage, { variant: 'danger' });
+        } else {
+            alert.show(errorMessage, { variant: 'danger' });
+        }
+    }, [updateUserMutate, id, navigate, alert, setError]);
 
     const handleFormSubmit = useCallback(
         () => createSubmitHandler(
             validate,
             setError,
-            handleMutation,
+            isDefined(id) ? handleUpdate : handleCreate,
         )(),
-        [validate, setError, handleMutation],
+        [validate, setError, id, handleUpdate, handleCreate],
     );
 
     const handleCancel = useCallback(() => {

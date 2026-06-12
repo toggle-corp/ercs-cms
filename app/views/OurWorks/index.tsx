@@ -18,6 +18,7 @@ import { isDefined } from '@togglecorp/fujs';
 import EditDeleteActions, { type Props as EditDeleteActionsProps } from '#components/EditDeleteActions';
 import StatusCell from '#components/StatusCell';
 import {
+    DashboardPage,
     type ExternalDashboardFilter,
     type ExternalDashboardsQuery,
     useDeleteExternalDashboardMutation,
@@ -69,8 +70,14 @@ function OurWorks() {
         },
         filters: {
             isActive: isDefined(filter.isActive) ? filter.isActive === 'true' : undefined,
-            page: filter.page,
             search: filter.search || undefined,
+            AND: {
+                page: DashboardPage.EmergencyResponse,
+                OR: {
+                    page: DashboardPage.ProjectMapping,
+                },
+            },
+            page: filter.page ?? null,
         },
     }), [limit, offset, filter]);
 
@@ -92,15 +99,12 @@ function OurWorks() {
         (id: string) => {
             deleteExternalDashboard({ id }).then((resp) => {
                 const result = resp.data?.deleteExternalDashboard;
-                if (isDefined(result) && 'ok' in result && result.ok) {
+                if (result?.ok) {
                     reExecuteQuery();
                     alert.show('Dashboard deleted successfully', { variant: 'success' });
-                    return;
+                } else {
+                    alert.show(errorMessage, { variant: 'danger' });
                 }
-                const message = isDefined(result) && 'messages' in result
-                    ? result.messages.map((item) => item.message).join(' ')
-                    : undefined;
-                alert.show(message || errorMessage, { variant: 'danger' });
             }).catch(() => {
                 alert.show(errorMessage, { variant: 'danger' });
             });

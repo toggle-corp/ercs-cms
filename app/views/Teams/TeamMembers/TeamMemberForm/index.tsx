@@ -117,6 +117,8 @@ function TeamMemberForm() {
             } else if (result?.errors) {
                 setError(transformToFormError(result.errors));
                 alert.show(errorMessage, { variant: 'danger' });
+            } else {
+                alert.show(errorMessage, { variant: 'danger' });
             }
         } else {
             const res = await createTeamMemberMutate({
@@ -130,6 +132,8 @@ function TeamMemberForm() {
                 }
             } else if (result?.errors) {
                 setError(transformToFormError(result.errors));
+                alert.show(errorMessage, { variant: 'danger' });
+            } else {
                 alert.show(errorMessage, { variant: 'danger' });
             }
         }

@@ -59,11 +59,6 @@ const DELETE_TEAM = gql`
                     name
                 }
             }
-            ... on OperationInfo {
-                messages {
-                    message
-                }
-            }
         }
     }
 `;
@@ -116,11 +111,6 @@ const DELETE_TEAM_MEMBER = gql`
                 result {
                     id
                     name
-                }
-            }
-            ... on OperationInfo {
-                messages {
-                    message
                 }
             }
         }

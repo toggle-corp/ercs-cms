@@ -1,14 +1,10 @@
-import { useMemo } from 'react';
 import {
     SelectInput,
     TextInput,
 } from '@ifrc-go/ui';
 import { type EntriesAsList } from '@togglecorp/toggle-form';
 
-import {
-    DashboardPage,
-    useDashboardEnumsQuery,
-} from '#generated/types/graphql';
+import { DashboardPage } from '#generated/types/graphql';
 import {
     keySelector,
     labelSelector,
@@ -18,22 +14,17 @@ import {
 
 import type { WorksFilterType } from '../index';
 
+const pageOptions = [
+    { key: DashboardPage.ProjectMapping, label: 'Project Mapping' },
+    { key: DashboardPage.EmergencyResponse, label: 'Emergency Responses' },
+];
+
 export interface Props {
     value: WorksFilterType;
     onChange: (...args: EntriesAsList<WorksFilterType>) => void;
 }
 
 function WorksFilter({ value, onChange }: Props) {
-    const [{ data: enumsData }] = useDashboardEnumsQuery();
-
-    const pageOptions = useMemo(
-        () => enumsData?.enums?.DashboardPage?.filter(
-            (option) => option.key !== DashboardPage.EmergencyAlerts
-                && option.key !== DashboardPage.DisasterResponse,
-        ),
-        [enumsData],
-    );
-
     return (
         <>
             <SelectInput

@@ -1,9 +1,196 @@
-function Preparedness() {
+import {
+    useCallback,
+    useMemo,
+} from 'react';
+import { AddFillIcon } from '@ifrc-go/icons';
+import {
+    Button,
+    Container,
+    Pager,
+    Table,
+} from '@ifrc-go/ui';
+import {
+    createElementColumn,
+    createStringColumn,
+} from '@ifrc-go/ui/utils';
+import { isDefined } from '@togglecorp/fujs';
+
+import EditDeleteActions, { type Props as EditDeleteActionsProps } from '#components/EditDeleteActions';
+import StatusCell from '#components/StatusCell';
+import {
+    DashboardPage,
+    type ExternalDashboardFilter,
+    type PreparednessExternalDashboardsQuery,
+    usePreparednessDeleteExternalDashboardMutation,
+    usePreparednessExternalDashboardsQuery,
+} from '#generated/types/graphql';
+import useAlert from '#hooks/useAlert';
+import useFilterState from '#hooks/useFilterState';
+import useRouting from '#hooks/useRouting';
+import {
+    errorMessage,
+    idSelector,
+} from '#utils/common';
+
+import PreparednessFilter from './PreparednessFilter';
+
+type PreparednessListItem = NonNullable<NonNullable<PreparednessExternalDashboardsQuery['externalDashboards']>['results'][number]> & { no: string };
+
+export interface PreparednessFilterType extends Omit<ExternalDashboardFilter, 'isActive'> {
+    isActive: string | undefined;
+}
+
+const defaultFilter: PreparednessFilterType = {
+    isActive: undefined,
+    page: undefined,
+    search: undefined,
+};
+
+function PreparednessList() {
+    const {
+        filter,
+        rawFilter,
+        filtered,
+        setFilterField,
+        page,
+        setPage,
+        limit,
+        offset,
+    } = useFilterState({
+        filter: defaultFilter,
+    });
+
+    const alert = useAlert();
+    const navigate = useRouting();
+
+    const queryVariables = useMemo(() => ({
+        pagination: {
+            limit,
+            offset,
+        },
+        filters: {
+            isActive: isDefined(filter.isActive) ? filter.isActive === 'true' : undefined,
+            search: filter.search || undefined,
+            AND: {
+                page: DashboardPage.EmergencyAlerts,
+                OR: {
+                    page: DashboardPage.DisasterResponse,
+                },
+            },
+            page: filter.page ?? null,
+        },
+    }), [limit, offset, filter]);
+
+    const [{ fetching, data }, reExecuteQuery] = usePreparednessExternalDashboardsQuery({
+        variables: queryVariables,
+    });
+    const [, deleteExternalDashboard] = usePreparednessDeleteExternalDashboardMutation();
+
+    const tableData: PreparednessListItem[] = useMemo(() => (
+        (data?.externalDashboards?.results ?? []).map((dashboard, index) => ({
+            ...dashboard,
+            no: String((page - 1) * limit + index + 1),
+        }))
+    ), [page, data, limit]);
+
+    const onDeleteClick = useCallback(
+        (id: string) => {
+            deleteExternalDashboard({ id }).then((resp) => {
+                const result = resp.data?.deleteExternalDashboard;
+                if (result?.ok) {
+                    reExecuteQuery();
+                    alert.show('Dashboard deleted successfully', { variant: 'success' });
+                } else {
+                    alert.show(errorMessage, { variant: 'danger' });
+                }
+            }).catch(() => {
+                alert.show(errorMessage, { variant: 'danger' });
+            });
+        },
+        [deleteExternalDashboard, reExecuteQuery, alert],
+    );
+
+    const columns = useMemo(() => [
+        createStringColumn<PreparednessListItem, string | number>(
+            'no',
+            'No.',
+            (item) => item.no,
+        ),
+        createStringColumn<PreparednessListItem, string | number>(
+            'title',
+            'Title',
+            (item) => item.title,
+        ),
+        createStringColumn<PreparednessListItem, string | number>(
+            'operation',
+            'Operation',
+            (item) => item.pageDisplay,
+        ),
+        createElementColumn<PreparednessListItem, string | number, { isActive: boolean }>(
+            'status',
+            'Status',
+            StatusCell,
+            (_, datum) => ({
+                isActive: datum.isActive,
+            }),
+        ),
+        createElementColumn<PreparednessListItem, string | number, EditDeleteActionsProps>(
+            'actions',
+            '',
+            EditDeleteActions,
+            (_, datum) => ({
+                id: datum.id,
+                onDelete: onDeleteClick,
+                itemTitle: datum.title,
+                to: 'editPreparedness',
+            }),
+            { columnWidth: 150 },
+        ),
+    ], [onDeleteClick]);
+
+    const handleCreateClick = useCallback(() => {
+        navigate('createPreparedness');
+    }, [navigate]);
+
     return (
-        <div>
-            Preparedness
-        </div>
+        <Container
+            withPadding
+            heading="Preparedness"
+            filters={(
+                <PreparednessFilter
+                    value={rawFilter}
+                    onChange={setFilterField}
+                />
+            )}
+            headerDescription="Track, organize, and update preparedness dashboards"
+            headerActions={(
+                <Button
+                    name={undefined}
+                    onClick={handleCreateClick}
+                    before={(<AddFillIcon />)}
+                    styleVariant="filled"
+                >
+                    Create
+                </Button>
+            )}
+            footerActions={(
+                <Pager
+                    activePage={page}
+                    itemsCount={data?.externalDashboards?.totalCount ?? 0}
+                    maxItemsPerPage={limit}
+                    onActivePageChange={setPage}
+                />
+            )}
+        >
+            <Table
+                keySelector={idSelector}
+                columns={columns}
+                data={tableData}
+                filtered={filtered}
+                pending={fetching}
+            />
+        </Container>
     );
 }
 
-export default Preparedness;
+export default PreparednessList;
