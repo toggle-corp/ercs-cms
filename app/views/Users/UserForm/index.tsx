@@ -34,7 +34,6 @@ import {
     useCreateUserMutation,
     useEnumsQuery,
     type UserCreateInput,
-    UserRole,
     type UserUpdateInput,
     useUpdateUserMutation,
     useUserDetailQuery,
@@ -42,6 +41,7 @@ import {
 import useAlert from '#hooks/useAlert';
 import useRouting from '#hooks/useRouting';
 import {
+    keySelector,
     labelSelector,
     statusOptions,
     valueSelector,
@@ -74,8 +74,6 @@ const getUserSchema = (isCreate: boolean): FormSchema => ({
 const defaultEditFormValue: PartialFormType = {
     isActive: false,
 };
-
-const roleKeySelector = (item: { key: string }) => item.key as UserRole;
 
 function UserForm() {
     const { id } = useParams();
@@ -256,7 +254,7 @@ function UserForm() {
                         value={value.role}
                         onChange={setFieldValue}
                         options={roleOptions}
-                        keySelector={roleKeySelector}
+                        keySelector={keySelector}
                         labelSelector={labelSelector}
                         error={error?.role}
                         disabled={pending}

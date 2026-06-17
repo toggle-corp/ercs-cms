@@ -6,6 +6,7 @@ import { AddFillIcon } from '@ifrc-go/icons';
 import {
     Button,
     Container,
+    DateInput,
     Pager,
     Table,
     TextInput,
@@ -27,11 +28,23 @@ import {
 import useAlert from '#hooks/useAlert';
 import useFilterState from '#hooks/useFilterState';
 import useRouting from '#hooks/useRouting';
-import { idSelector } from '#utils/common';
+import {
+    errorMessage,
+    idSelector,
+} from '#utils/common';
 
 type TeamsListItem = NonNullable<NonNullable<TeamsQuery['teams']>['results'][number] & { no: string }>;
 
-const defaultFilter: TeamFilter = { search: undefined };
+interface TeamsFilterType extends Omit<TeamFilter, 'createdAt'> {
+    createdAtGte: string | undefined;
+    createdAtLte: string | undefined;
+}
+
+const defaultFilter: TeamsFilterType = {
+    search: undefined,
+    createdAtGte: undefined,
+    createdAtLte: undefined,
+};
 
 function Teams() {
     const {
@@ -57,6 +70,10 @@ function Teams() {
         },
         filters: {
             search: filter.search,
+            createdAt: (filter.createdAtGte || filter.createdAtLte) ? {
+                gte: filter.createdAtGte,
+                lte: filter.createdAtLte,
+            } : undefined,
         },
     }), [limit, offset, filter]);
 
@@ -75,10 +92,15 @@ function Teams() {
     const onDeleteClick = useCallback(
         (id: string) => {
             deleteTeam({ id }).then((resp) => {
-                if (resp.data?.deleteTeam) {
+                const result = resp.data?.deleteTeam;
+                if (result && 'ok' in result && result.ok) {
                     reExecuteQuery();
                     alert.show('Team deleted successfully', { variant: 'success' });
+                } else {
+                    alert.show(errorMessage, { variant: 'danger' });
                 }
+            }).catch((error) => {
+                alert.show(error ?? errorMessage, { variant: 'danger' });
             });
         },
         [deleteTeam, reExecuteQuery, alert],
@@ -142,12 +164,26 @@ function Teams() {
             heading="Teams"
             headerDescription="Manage a dedicated team committed to delivering impactful solutions"
             filters={(
-                <TextInput
-                    name="search"
-                    placeholder="Search"
-                    value={rawFilter.search}
-                    onChange={setFilterField}
-                />
+                <>
+                    <DateInput
+                        name="createdAtGte"
+                        label="Created at start date"
+                        value={rawFilter.createdAtGte}
+                        onChange={setFilterField}
+                    />
+                    <DateInput
+                        name="createdAtLte"
+                        label="Created at end date"
+                        value={rawFilter.createdAtLte}
+                        onChange={setFilterField}
+                    />
+                    <TextInput
+                        name="search"
+                        placeholder="Search"
+                        value={rawFilter.search}
+                        onChange={setFilterField}
+                    />
+                </>
             )}
             footerActions={(
                 <Pager

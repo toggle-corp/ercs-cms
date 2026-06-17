@@ -19,26 +19,42 @@ import { isDefined } from '@togglecorp/fujs';
 import EditDeleteActions, { type Props as EditDeleteActionsProps } from '#components/EditDeleteActions';
 import {
     AdminAreaLevel,
+    type TeamMemberFilter,
     type TeamMembersQuery,
     useDeleteTeamMemberMutation,
     useTeamDetailQuery,
     useTeamMembersQuery,
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
-import usePagination from '#hooks/usePagination';
+import useFilterState from '#hooks/useFilterState';
 import useRegionMap from '#hooks/useRegionMap';
 import useRouting from '#hooks/useRouting';
-import { idSelector } from '#utils/common';
+import {
+    errorMessage,
+    idSelector,
+} from '#utils/common';
+
+import TeamMembersFilters from './TeamMembersFilters';
 
 type TeamMembersListItem = NonNullable<NonNullable<TeamMembersQuery['teamMembers']>['results'][number] & { no: string }>;
 
+const defaultFilter: TeamMemberFilter = {
+    search: undefined,
+};
+
 function TeamMembers() {
     const {
+        filter,
+        rawFilter,
+        filtered,
+        setFilterField,
         page,
         setPage,
-        pageSize,
-        variables,
-    } = usePagination();
+        limit,
+        offset,
+    } = useFilterState({
+        filter: defaultFilter,
+    });
 
     const alert = useAlert();
     const navigate = useRouting();
@@ -55,28 +71,39 @@ function TeamMembers() {
     const [, deleteTeamMember] = useDeleteTeamMemberMutation();
     const [{ fetching, data }, reExecuteQuery] = useTeamMembersQuery({
         variables: {
-            filters: { teamId: id },
-            pagination: variables.pagination,
+            filters: {
+                teamId: id,
+                search: filter.search,
+            },
+            pagination: {
+                limit,
+                offset,
+            },
         },
         pause: !id,
     });
 
     const tableData = useMemo(() => (
         data?.teamMembers.results.map((user, index) => {
-            const no = (page - 1) * pageSize + index + 1;
+            const no = (page - 1) * limit + index + 1;
             return {
                 ...user,
                 no,
             };
-        }) as unknown as TeamMembersListItem[]), [page, data, pageSize]);
+        }) as unknown as TeamMembersListItem[]), [page, data, limit]);
 
     const onDeleteClick = useCallback(
-        (itemId: string) => {
-            deleteTeamMember({ id: itemId }).then((resp) => {
-                if (resp.data?.deleteTeamMember) {
+        (memberId: string) => {
+            deleteTeamMember({ id: memberId }).then((resp) => {
+                const result = resp.data?.deleteTeamMember;
+                if (result && 'ok' in result && result.ok) {
                     reExecuteQuery();
                     alert.show('Team Member deleted successfully', { variant: 'success' });
+                } else {
+                    alert.show(errorMessage, { variant: 'danger' });
                 }
+            }).catch((error) => {
+                alert.show(error ?? errorMessage, { variant: 'danger' });
             });
         },
         [deleteTeamMember, reExecuteQuery, alert],
@@ -130,11 +157,10 @@ function TeamMembers() {
                 EditDeleteActions,
                 (_, datum) => ({
                     id: id ?? '',
-                    onDelete: onDeleteClick,
+                    onDelete: () => onDeleteClick(datum.id),
                     itemTitle: datum.name,
                     member: datum.id,
                     to: 'editTeamMember',
-
                 }),
                 { columnWidth: 150 },
             ),
@@ -151,11 +177,17 @@ function TeamMembers() {
             withPadding
             heading={teamData?.team.name}
             headerDescription="These teams are specialized volunteer groups trained to respond to disasters at the local, regional, or zonal level within the Red Cross structure."
+            filters={(
+                <TeamMembersFilters
+                    value={rawFilter}
+                    onChange={setFilterField}
+                />
+            )}
             footerActions={(
                 <Pager
                     activePage={page}
                     itemsCount={data?.teamMembers.totalCount ?? 0}
-                    maxItemsPerPage={pageSize}
+                    maxItemsPerPage={limit}
                     onActivePageChange={setPage}
                 />
             )}
@@ -173,8 +205,8 @@ function TeamMembers() {
             <Table
                 keySelector={idSelector}
                 columns={columns}
+                filtered={filtered}
                 data={tableData}
-                filtered={false}
                 pending={fetching || teamDetailFetch}
             />
         </Container>

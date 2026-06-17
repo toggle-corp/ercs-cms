@@ -9,6 +9,7 @@ import {
     Container,
     InputSection,
     ListView,
+    SelectInput,
     TextInput,
 } from '@ifrc-go/ui';
 import { isDefined } from '@togglecorp/fujs';
@@ -30,6 +31,7 @@ import {
     type TeamMemberCreateInput,
     type TeamMemberUpdateInput,
     useCreateTeamMemberMutation,
+    useEnumsQuery,
     useTeamMemberDetailsQuery,
     useUpdateTeamMemberMutation,
 } from '#generated/types/graphql';
@@ -37,6 +39,8 @@ import useAlert from '#hooks/useAlert';
 import useRouting from '#hooks/useRouting';
 import {
     errorMessage,
+    keySelector,
+    labelSelector,
     transformToFormError,
 } from '#utils/common';
 
@@ -58,6 +62,7 @@ const TeamSchema: FormSchema = {
         team: {
             required: true,
         },
+        sex: {},
         position: {
             required: true,
             defaultValue: '',
@@ -89,6 +94,10 @@ function TeamMemberForm() {
 
     const [{ fetching: createPending }, createTeamMemberMutate] = useCreateTeamMemberMutation();
     const [{ fetching: updatePending }, updateTeamMemberMutate] = useUpdateTeamMemberMutation();
+
+    const [{ data: enumsData }] = useEnumsQuery();
+
+    const sexOptions = enumsData?.enums?.TeamMemberSex;
 
     const handleMutation = useCallback(async (mutationData: PartialFormType) => {
         const redirectPath = 'teamMembers';
@@ -234,6 +243,21 @@ function TeamMemberForm() {
                         onChange={setFieldValue}
                         error={error?.phoneNumber}
                         disabled={pending}
+                    />
+                </InputSection>
+                <InputSection
+                    title="Sex"
+                    description="Enter the sex of the member"
+                >
+                    <SelectInput
+                        name="sex"
+                        value={value.sex}
+                        onChange={setFieldValue}
+                        error={error?.sex}
+                        disabled={pending}
+                        options={sexOptions}
+                        keySelector={keySelector}
+                        labelSelector={labelSelector}
                     />
                 </InputSection>
                 <InputSection

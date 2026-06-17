@@ -33,8 +33,9 @@ function EditDeleteActions(props: Props) {
         // as id and memberId is needed to access
         if (isDefined(member)) {
             navigate(to, { id, member });
+        } else {
+            navigate(to, { id });
         }
-        navigate(to, { id });
     }, [navigate, to, id, member]);
 
     return (
