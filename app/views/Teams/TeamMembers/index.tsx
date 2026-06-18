@@ -40,6 +40,8 @@ type TeamMembersListItem = NonNullable<NonNullable<TeamMembersQuery['teamMembers
 
 const defaultFilter: TeamMemberFilter = {
     search: undefined,
+    regions: undefined,
+    woredas: undefined,
 };
 
 function TeamMembers() {
@@ -74,6 +76,8 @@ function TeamMembers() {
             filters: {
                 teamId: id,
                 search: filter.search,
+                regions: filter.regions?.length === 0 ? undefined : filter.regions,
+                woredas: filter.woredas?.length === 0 ? undefined : filter.woredas,
             },
             pagination: {
                 limit,
