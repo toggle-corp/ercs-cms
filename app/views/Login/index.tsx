@@ -1,4 +1,10 @@
 import {
+    use,
+    useCallback,
+    useMemo,
+} from 'react';
+import {
+    BlockLoading,
     Button,
     Container,
     Description,
@@ -13,17 +19,39 @@ import {
     createSubmitHandler,
     getErrorObject,
     type ObjectSchema,
+    removeNull,
     requiredStringCondition,
     useForm,
 } from '@togglecorp/toggle-form';
+import { gql } from 'urql';
 
+import UserContext from '#contexts/UserContext';
+import { useLoginMutation } from '#generated/types/graphql';
+import useAlert from '#hooks/useAlert';
+import useRouting from '#hooks/useRouting';
 import BackGroundImage from '#resources/image/loginbackground.jpg';
 import Logo from '#resources/image/logo.png';
+import { errorMessage } from '#utils/common';
 
 import styles from './styles.module.css';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const LOGIN_MUTATION = gql`
+    mutation Login($email: String!, $password: String!) {
+        login(email: $email, password: $password) {
+            email
+            fullName
+            id
+            createdAt
+            isActive
+            mfaEnabled
+            role
+        }
+    }
+`;
+
 interface FormFields {
-    username?: string;
+    email?: string;
     password?: string;
 }
 type FormSchema = ObjectSchema<FormFields>;
@@ -34,7 +62,7 @@ const defaultFormValue: FormFields = {
 
 const formSchema: FormSchema = {
     fields: (): FormSchemaFields => ({
-        username: {
+        email: {
             required: true,
             requiredValidation: requiredStringCondition,
         },
@@ -46,24 +74,71 @@ const formSchema: FormSchema = {
 };
 
 function Login() {
+    const { setUser } = use(UserContext);
+    const navigate = useRouting();
+    const alert = useAlert();
+
     const {
-        value: formValue,
+        value,
         error: formError,
         setFieldValue,
         setError,
         validate,
     } = useForm(formSchema, { value: defaultFormValue });
 
-    const fieldError = getErrorObject(formError);
+    const error = getErrorObject(formError);
 
-    // TODO: Implement actual login logic
-    const login = () => {};
+    const [{ fetching: loginPending }, triggerLogin] = useLoginMutation();
 
-    const handleFormSubmit = () => createSubmitHandler(
+    const handleMutation = useCallback(async (mutationData: FormFields) => {
+        try {
+            const { data, error: apiError } = await triggerLogin({
+                email: mutationData.email ?? '',
+                password: mutationData.password ?? '',
+            });
+
+            if (apiError) {
+                alert.show('Incorrect username/password', {
+                    variant: 'danger',
+                });
+                return;
+            }
+
+            const loginResponse = data?.login;
+
+            if (!loginResponse) {
+                alert.show(errorMessage, {
+                    variant: 'danger',
+                });
+                return;
+            }
+
+            setUser(removeNull(loginResponse));
+
+            alert.show('Login successful!', { variant: 'success' });
+            navigate('home');
+        } catch {
+            alert.show(errorMessage, {
+                variant: 'danger',
+            });
+        }
+    }, [alert, navigate, setUser, triggerLogin]);
+
+    const handleFormSubmit = useMemo(() => createSubmitHandler(
         validate,
         setError,
-        login,
-    );
+        handleMutation,
+    ), [validate, setError, handleMutation]);
+
+    if (loginPending) {
+        return (
+            <BlockLoading
+                withoutBorder
+                compact
+                message="Loading"
+            />
+        );
+    }
 
     return (
         <ListView
@@ -75,7 +150,7 @@ function Login() {
                 src={BackGroundImage}
                 className={styles.image}
             />
-            <form onSubmit={handleFormSubmit}>
+            <form>
                 <Container
                     spacing="4xl"
                     withCenteredContent
@@ -116,20 +191,22 @@ function Login() {
                                 spacing="lg"
                             >
                                 <TextInput
-                                    name="username"
+                                    name="email"
                                     label="Email/Username"
-                                    value={formValue.username}
+                                    value={value.email}
                                     onChange={setFieldValue}
-                                    error={fieldError?.username}
+                                    error={error?.email}
                                     withAsterisk
+                                    disabled={loginPending}
                                     autoFocus
                                 />
                                 <PasswordInput
                                     name="password"
                                     label="Password"
-                                    value={formValue.password}
+                                    value={value.password}
                                     onChange={setFieldValue}
-                                    error={fieldError?.password}
+                                    error={error?.password}
+                                    disabled={loginPending}
                                     withAsterisk
                                 />
                             </ListView>
@@ -140,8 +217,9 @@ function Login() {
                             >
                                 <Button
                                     name={undefined}
-                                    type="submit"
                                     styleVariant="filled"
+                                    onClick={handleFormSubmit}
+                                    disabled={loginPending}
                                 >
                                     Login
                                 </Button>
