@@ -1,3 +1,7 @@
+import { nonFieldError } from '@togglecorp/toggle-form';
+
+import type { AdminAreaLevel } from '#generated/types/graphql';
+
 export function labelSelector<T>(item: { label: T }) {
     return item.label;
 }
@@ -31,3 +35,31 @@ export const statusFilterOptions = [
 ];
 
 export const errorMessage = 'Something went wrong. Please try again. ';
+
+interface ServerError {
+    field: string;
+    messages: string | null;
+    objectErrors?: ServerError[] | null;
+    arrayErrors?: unknown[] | null;
+}
+
+export function transformToFormError(
+    serverErrors: ServerError[],
+): Record<string | symbol, unknown> {
+    return serverErrors.reduce(
+        (acc, { field, messages, objectErrors }) => {
+            if (field === 'nonFieldErrors') {
+                return { ...acc, [nonFieldError]: messages ?? '' };
+            }
+            if (objectErrors?.length) {
+                return { ...acc, [field]: transformToFormError(objectErrors) };
+            }
+            return { ...acc, [field]: messages ?? '' };
+        },
+        {} as Record<string | symbol, unknown>,
+    );
+}
+
+export type REGION_LEVEL = AdminAreaLevel.Region;
+export type ZONE_LEVEL = AdminAreaLevel.Zone;
+export type WOREDA_LEVEL = AdminAreaLevel.Woreda;

@@ -109,6 +109,10 @@ const ENUMS = gql`
                 key
                 label
             }
+            TeamMemberSex {
+                key
+                label
+            }
         }
     }
 `;

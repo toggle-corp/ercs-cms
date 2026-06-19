@@ -4,12 +4,14 @@ import {
     EditTwoLineIcon,
 } from '@ifrc-go/icons';
 import { TableActions } from '@ifrc-go/ui';
+import { isDefined } from '@togglecorp/fujs';
 
 import DropdownMenuItem from '#components/DropdownMenuItem';
 import useRouting, { type RoutesMap } from '#hooks/useRouting';
 
 export interface Props {
     id: string;
+    member?: string;
     onDelete: (id: string) => void;
     itemTitle: string;
     to: keyof RoutesMap;
@@ -21,13 +23,20 @@ function EditDeleteActions(props: Props) {
         onDelete,
         itemTitle,
         to,
+        member,
     } = props;
 
     const navigate = useRouting();
 
     const handleEditClick = useCallback(() => {
-        navigate(to, { id });
-    }, [navigate, to, id]);
+        // NOTE: This navigation is for Team member
+        // as id and memberId is needed to access
+        if (isDefined(member)) {
+            navigate(to, { id, member });
+        } else {
+            navigate(to, { id });
+        }
+    }, [navigate, to, id, member]);
 
     return (
         <TableActions

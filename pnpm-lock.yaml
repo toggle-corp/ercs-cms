@@ -40,7 +40,7 @@ importers:
         version: 19.2.6(react@19.2.6)
       react-router:
         specifier: ^7.15.1
-        version: 7.15.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 7.17.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       urql:
         specifier: ^5.0.1
         version: 5.0.2(@urql/core@6.0.1(graphql@16.14.0))(react@19.2.6)
@@ -4350,8 +4350,8 @@ packages:
       '@types/react':
         optional: true
 
-  react-router@7.15.1:
-    resolution: {integrity: sha512-R8rl9HhgikFYoPJymnUtPXWbnDb3oget6lQnfIoupbt61aT9aOhRkDsY2XRhZRyX1Z/8a5sL74fXmFNm3NRK5A==}
+  react-router@7.17.0:
+    resolution: {integrity: sha512-FDELK7rTMlCHO5+reyXsPlmfr7N1F91lPHsWYfMEGQm/KQ+F4JFM8jGoeQDmDvdTs93Fw9aSilH+uKRb4/jXvQ==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       react: '>=18'
@@ -9854,7 +9854,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.14
 
-  react-router@7.15.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
+  react-router@7.17.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
     dependencies:
       cookie: 1.1.1
       react: 19.2.6

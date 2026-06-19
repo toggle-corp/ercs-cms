@@ -115,6 +115,10 @@ function TeamForm() {
 
     const teamData = data?.team;
 
+    const handleCancelClick = useCallback(() => {
+        navigate('teams');
+    }, [navigate]);
+
     useEffect(() => {
         if (!teamDetailFetch && isDefined(teamData)) {
             setValue(removeNull(teamData));
@@ -140,7 +144,7 @@ function TeamForm() {
                 <ListView>
                     <Button
                         name={undefined}
-                        onClick={() => navigate('teams')}
+                        onClick={handleCancelClick}
                     >
                         Cancel
                     </Button>
