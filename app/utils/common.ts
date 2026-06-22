@@ -1,3 +1,4 @@
+import { isFalsyString } from '@togglecorp/fujs';
 import { nonFieldError } from '@togglecorp/toggle-form';
 
 import type { AdminAreaLevel } from '#generated/types/graphql';
@@ -63,3 +64,26 @@ export function transformToFormError(
 export type REGION_LEVEL = AdminAreaLevel.Region;
 export type ZONE_LEVEL = AdminAreaLevel.Zone;
 export type WOREDA_LEVEL = AdminAreaLevel.Woreda;
+
+const SAFE_URL_PROTOCOLS = ['http:', 'https:'];
+
+export function getSafeUrl(value: string | null | undefined): string | undefined {
+    if (isFalsyString(value)) {
+        return undefined;
+    }
+    try {
+        const parsed = new URL(value);
+        return SAFE_URL_PROTOCOLS.includes(parsed.protocol) ? parsed.href : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+export function safeUrlCondition(value: string | null | undefined) {
+    if (isFalsyString(value)) {
+        return undefined;
+    }
+    return getSafeUrl(value)
+        ? undefined
+        : 'Enter a valid URL starting with http:// or https://';
+}

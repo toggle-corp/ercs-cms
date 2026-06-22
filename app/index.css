@@ -37,3 +37,20 @@ a {
     text-decoration: none;
     color: inherit;
 }
+
+.status-indicator-active,
+.status-indicator-inactive {
+    display: inline-block;
+    border-radius: 50%;
+    width: var(--go-ui-spacing-sm);
+    height: var(--go-ui-spacing-sm);
+}
+
+
+.status-indicator-active {
+    background-color: var(--go-ui-color-positive);
+}
+
+.status-indicator-inactive {
+    background-color: var(--go-ui-color-negative);
+}

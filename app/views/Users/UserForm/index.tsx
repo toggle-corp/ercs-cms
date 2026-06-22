@@ -124,7 +124,7 @@ function UserForm() {
                 alert.show(alertMessage, { variant: 'success' });
             } else if (isDefined(result) && isDefined(result.errors)) {
                 setError(result.errors);
-                alert.show(result.errors?.messages, { variant: 'danger' });
+                alert.show(result.errors[0]?.messages, { variant: 'danger' });
             }
         } else {
             const createPayload = removeNull(mutationData) as unknown as UserCreateInput;

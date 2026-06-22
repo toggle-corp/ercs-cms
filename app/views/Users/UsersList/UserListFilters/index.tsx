@@ -1,10 +1,11 @@
+import { useState } from 'react';
 import {
     SelectInput,
     TextInput,
 } from '@ifrc-go/ui';
 import { type EntriesAsList } from '@togglecorp/toggle-form';
 
-import RegionSelectInput from '#components/RegionSelectInput';
+import RegionSearchMultiSelectInput, { type AdminAreaItem } from '#components/RegionSearchMultiSelectInput';
 import {
     AdminAreaLevel,
     useEnumsQuery,
@@ -26,15 +27,21 @@ export interface Props {
 function UserFilter({ value, onChange }: Props) {
     const [{ data: enumsData }] = useEnumsQuery();
 
+    const [regionOptions, setRegionOptions] = useState<
+        AdminAreaItem[] | undefined | null
+    >([]);
+
     const roleOptions = enumsData?.enums?.UserRole;
 
     return (
         <>
-            <RegionSelectInput
-                name="region"
-                level={AdminAreaLevel.Region}
+            <RegionSearchMultiSelectInput
+                name="regions"
                 placeholder="Region"
-                value={value.region}
+                level={AdminAreaLevel.Region}
+                value={value.regions}
+                onOptionsChange={setRegionOptions}
+                options={regionOptions}
                 onChange={onChange}
             />
             <SelectInput
