@@ -35,9 +35,9 @@ import {
     DashboardPage,
     type ExternalDashboardCreateInput,
     type ExternalDashboardUpdateInput,
-    useCreateExternalDashboardMutation,
-    useExternalDashboardDetailQuery,
-    useUpdateExternalDashboardMutation,
+    usePreparednessCreateExternalDashboardMutation,
+    usePreparednessExternalDashboardDetailQuery,
+    usePreparednessUpdateExternalDashboardMutation,
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
 import useRouting from '#hooks/useRouting';
@@ -55,7 +55,7 @@ type PartialFormType = PartialForm<ExternalDashboardCreateInput>;
 type FormSchema = ObjectSchema<PartialFormType>;
 type FormSchemaFields = ReturnType<FormSchema['fields']>;
 
-const worksSchema: FormSchema = {
+const externalDashboardSchema: FormSchema = {
     fields: (): FormSchemaFields => ({
         page: {
             required: true,
@@ -73,21 +73,19 @@ const worksSchema: FormSchema = {
         },
         isActive: {},
         order: {},
-        showOnHome: {},
     }),
 };
 
-const defaultEditFormValue: PartialFormType = {
+const defaultFormValue: PartialFormType = {
     isActive: false,
-    showOnHome: false,
 };
 
 const pageOptions = [
-    { key: DashboardPage.ProjectMapping, label: 'Project Mapping' },
-    { key: DashboardPage.EmergencyResponse, label: 'Emergency Responses' },
+    { key: DashboardPage.EmergencyAlerts, label: 'Emergency Alerts' },
+    { key: DashboardPage.DisasterResponse, label: 'Disaster Responses' },
 ];
 
-function WorksForm() {
+function PreparednessForm() {
     const { id } = useParams();
     const navigate = useRouting();
     const alert = useAlert();
@@ -99,9 +97,9 @@ function WorksForm() {
         validate,
         setError,
         setValue,
-    } = useForm(worksSchema, { value: defaultEditFormValue });
+    } = useForm(externalDashboardSchema, { value: defaultFormValue });
 
-    const [{ data, fetching: worksDetailFetch }] = useExternalDashboardDetailQuery({
+    const [{ data, fetching: detailFetching }] = usePreparednessExternalDashboardDetailQuery({
         variables: { id: isDefined(id) ? id : '' },
         pause: isNotDefined(id),
     });
@@ -109,13 +107,13 @@ function WorksForm() {
     const [
         { fetching: createPending },
         createExternalDashboard,
-    ] = useCreateExternalDashboardMutation();
+    ] = usePreparednessCreateExternalDashboardMutation();
     const [
         { fetching: updatePending },
         updateExternalDashboard,
-    ] = useUpdateExternalDashboardMutation();
+    ] = usePreparednessUpdateExternalDashboardMutation();
 
-    const pending = createPending || updatePending || worksDetailFetch;
+    const pending = createPending || updatePending || detailFetching;
 
     const handleCreate = useCallback(async (mutationData: PartialFormType) => {
         const createPayload = removeNull(mutationData) as ExternalDashboardCreateInput;
@@ -123,8 +121,8 @@ function WorksForm() {
         const result = res.data?.createExternalDashboard;
 
         if (isDefined(result) && result.ok) {
-            navigate('ourWorks');
-            alert.show('Initiative created successfully', { variant: 'success' });
+            navigate('preparedness');
+            alert.show('Dashboard created successfully', { variant: 'success' });
         } else if (isDefined(result) && isDefined(result.errors)) {
             setError(transformToFormError(result.errors));
             alert.show(errorMessage, { variant: 'danger' });
@@ -142,8 +140,8 @@ function WorksForm() {
         const result = res.data?.updateExternalDashboard;
 
         if (isDefined(result) && result.ok) {
-            navigate('ourWorks');
-            alert.show('Initiative updated successfully', { variant: 'success' });
+            navigate('preparedness');
+            alert.show('Dashboard updated successfully', { variant: 'success' });
         } else if (isDefined(result) && isDefined(result.errors)) {
             setError(transformToFormError(result.errors));
             alert.show(errorMessage, { variant: 'danger' });
@@ -162,7 +160,7 @@ function WorksForm() {
     );
 
     const handleCancel = useCallback(() => {
-        navigate('ourWorks');
+        navigate('preparedness');
     }, [navigate]);
 
     const error = getErrorObject(formError);
@@ -178,7 +176,7 @@ function WorksForm() {
         });
     }, [data, setValue]);
 
-    if (worksDetailFetch || createPending || updatePending) {
+    if (detailFetching) {
         return (
             <BlockLoading
                 withoutBorder
@@ -190,10 +188,10 @@ function WorksForm() {
 
     return (
         <Container
-            heading={isDefined(id) ? 'Edit Initiative' : 'Create New Initiatives'}
+            heading={isDefined(id) ? 'Edit Preparedness Dashboard' : 'Create Preparedness Dashboard'}
             headerDescription={isDefined(id)
-                ? 'Manage and update emergency response or project mapping on ongoing and initiative works'
-                : 'Create a emergency response or project mapping on ongoing and initiative works'}
+                ? 'Manage and update emergency alerts or disaster response'
+                : 'Create a emergency alerts or disaster response'}
             withPadding
             footerActions={(
                 <ListView>
@@ -215,7 +213,6 @@ function WorksForm() {
             )}
         >
             <ListView layout="grid" withSidebar>
-
                 <ListView layout="block">
                     <InputSection
                         title="Operations"
@@ -312,11 +309,10 @@ function WorksForm() {
                         />
                     </InputSection>
                 </ListView>
-
                 <EmbedPreview url={value.url} />
             </ListView>
         </Container>
     );
 }
 
-export default WorksForm;
+export default PreparednessForm;

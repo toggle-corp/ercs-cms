@@ -93,14 +93,14 @@ function Teams() {
         (id: string) => {
             deleteTeam({ id }).then((resp) => {
                 const result = resp.data?.deleteTeam;
-                if (result && 'ok' in result && result.ok) {
+                if (result?.ok) {
                     reExecuteQuery();
                     alert.show('Team deleted successfully', { variant: 'success' });
                 } else {
                     alert.show(errorMessage, { variant: 'danger' });
                 }
-            }).catch((error) => {
-                alert.show(error ?? errorMessage, { variant: 'danger' });
+            }).catch(() => {
+                alert.show(errorMessage, { variant: 'danger' });
             });
         },
         [deleteTeam, reExecuteQuery, alert],

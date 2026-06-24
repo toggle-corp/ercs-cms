@@ -11,7 +11,7 @@ import {
     ImStrategyIcon,
     LeadershipIcon,
     ScreenshotTwoFillIcon,
-    ShieldFlashLineIcon,
+    ShareBoxLineIcon,
     ShieldStarLineIcon,
 } from '@ifrc-go/icons';
 
@@ -26,7 +26,7 @@ function PrivateLayout() {
         return <Navigate to="/login" />;
     }
 
-    const navigationItem : NavigationItem[] = [
+    const navigationItem: NavigationItem[] = [
         {
             groupTitle: 'User Management',
             routes: [
@@ -53,16 +53,21 @@ function PrivateLayout() {
                 {
                     title: 'Our Works',
                     to: 'ourWorks',
-                    icon: <ShieldFlashLineIcon />,
+                    icon: <ShareBoxLineIcon />,
                 },
                 {
                     title: 'Preparedness',
                     to: 'preparedness',
-                    icon: <FocusTwoLineIcon />,
+                    icon: <ShieldStarLineIcon />,
                 },
                 {
                     title: 'Data and Reports',
                     to: 'dataAndReports',
+                    icon: <FocusTwoLineIcon />,
+                },
+                {
+                    title: 'Capacity and Resources',
+                    to: 'capacityAndResources',
                     icon: <ArtboardLineIcon />,
                 },
                 {

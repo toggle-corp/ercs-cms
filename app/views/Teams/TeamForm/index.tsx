@@ -86,6 +86,8 @@ function TeamForm() {
             } else if (result?.errors) {
                 setError(result.errors);
                 alert.show(result.errors, { variant: 'danger' });
+            } else {
+                alert.show(errorMessage, { variant: 'danger' });
             }
         } else {
             const res = await createTeamMutate({
@@ -98,6 +100,8 @@ function TeamForm() {
             } else if (result?.errors) {
                 setError(result?.errors);
                 alert.show(result?.errors?.message ?? errorMessage, { variant: 'danger' });
+            } else {
+                alert.show(errorMessage, { variant: 'danger' });
             }
         }
     }, [alert, updateTeamMutate, id, navigate, setError, createTeamMutate]);

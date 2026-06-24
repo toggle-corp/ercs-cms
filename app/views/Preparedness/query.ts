@@ -2,7 +2,7 @@
 import { gql } from 'urql';
 
 const EXTERNAL_DASHBOARDS = gql`
-    query ExternalDashboards($pagination: OffsetPaginationInput, $filters: ExternalDashboardFilter) {
+    query PreparednessExternalDashboards($pagination: OffsetPaginationInput, $filters: ExternalDashboardFilter) {
         externalDashboards(pagination: $pagination, filters: $filters) {
             results {
                 createdAt
@@ -25,7 +25,7 @@ const EXTERNAL_DASHBOARDS = gql`
 `;
 
 const DELETE_EXTERNAL_DASHBOARD = gql`
-    mutation DeleteExternalDashboard($id: ID!) {
+    mutation PreparednessDeleteExternalDashboard($id: ID!) {
         deleteExternalDashboard(id: $id) {
             ... on ExternalDashboardTypeMutationResponseType {
                 errors
@@ -39,7 +39,7 @@ const DELETE_EXTERNAL_DASHBOARD = gql`
 `;
 
 const DASHBOARD_ENUMS = gql`
-    query DashboardEnums {
+    query PreparednessDashboardEnums {
         enums {
             DashboardPage {
                 key
@@ -50,7 +50,7 @@ const DASHBOARD_ENUMS = gql`
 `;
 
 const EXTERNAL_DASHBOARD_DETAIL = gql`
-    query ExternalDashboardDetail($id: ID!) {
+    query PreparednessExternalDashboardDetail($id: ID!) {
         externalDashboard(id: $id) {
             id
             description
@@ -65,7 +65,7 @@ const EXTERNAL_DASHBOARD_DETAIL = gql`
 `;
 
 const CREATE_EXTERNAL_DASHBOARD = gql`
-    mutation CreateExternalDashboard($data: ExternalDashboardCreateInput!) {
+    mutation PreparednessCreateExternalDashboard($data: ExternalDashboardCreateInput!) {
         createExternalDashboard(data: $data) {
             ... on ExternalDashboardTypeMutationResponseType {
                 errors
@@ -79,7 +79,7 @@ const CREATE_EXTERNAL_DASHBOARD = gql`
 `;
 
 const UPDATE_EXTERNAL_DASHBOARD = gql`
-    mutation UpdateExternalDashboard($id: ID!, $data: ExternalDashboardUpdateInput!) {
+    mutation PreparednessUpdateExternalDashboard($id: ID!, $data: ExternalDashboardUpdateInput!) {
         updateExternalDashboard(id: $id, data: $data) {
             ... on ExternalDashboardTypeMutationResponseType {
                 errors

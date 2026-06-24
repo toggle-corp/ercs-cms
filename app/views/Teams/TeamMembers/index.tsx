@@ -100,19 +100,18 @@ function TeamMembers() {
         (memberId: string) => {
             deleteTeamMember({ id: memberId }).then((resp) => {
                 const result = resp.data?.deleteTeamMember;
-                if (result && 'ok' in result && result.ok) {
+                if (result?.ok) {
                     reExecuteQuery();
-                    alert.show('Team Member deleted successfully', { variant: 'success' });
+                    alert.show('Team member deleted successfully', { variant: 'success' });
                 } else {
                     alert.show(errorMessage, { variant: 'danger' });
                 }
-            }).catch((error) => {
-                alert.show(error ?? errorMessage, { variant: 'danger' });
+            }).catch(() => {
+                alert.show(errorMessage, { variant: 'danger' });
             });
         },
         [deleteTeamMember, reExecuteQuery, alert],
     );
-
     const columns = useMemo(() => [
         createStringColumn<TeamMembersListItem, string | number>(
             'no',
