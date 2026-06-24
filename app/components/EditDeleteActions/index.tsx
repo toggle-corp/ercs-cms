@@ -12,6 +12,7 @@ import useRouting, { type RoutesMap } from '#hooks/useRouting';
 export interface Props {
     id: string;
     member?: string;
+    dashboard?: string;
     onDelete: (id: string) => void;
     itemTitle: string;
     to: keyof RoutesMap;
@@ -24,19 +25,20 @@ function EditDeleteActions(props: Props) {
         itemTitle,
         to,
         member,
+        dashboard,
     } = props;
 
     const navigate = useRouting();
 
     const handleEditClick = useCallback(() => {
-        // NOTE: This navigation is for Team member
-        // as id and memberId is needed to access
-        if (isDefined(member)) {
+        if (isDefined(dashboard)) {
+            navigate(to, { id, dashboard });
+        } else if (isDefined(member)) {
             navigate(to, { id, member });
         } else {
             navigate(to, { id });
         }
-    }, [navigate, to, id, member]);
+    }, [navigate, to, id, member, dashboard]);
 
     return (
         <TableActions

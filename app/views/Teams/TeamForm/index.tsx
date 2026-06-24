@@ -11,7 +11,10 @@ import {
     ListView,
     TextInput,
 } from '@ifrc-go/ui';
-import { isDefined } from '@togglecorp/fujs';
+import {
+    isDefined,
+    isNotDefined,
+} from '@togglecorp/fujs';
 import {
     createSubmitHandler,
     getErrorObject,
@@ -31,7 +34,10 @@ import {
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
 import useRouting from '#hooks/useRouting';
-import { errorMessage } from '#utils/common';
+import {
+    errorMessage,
+    transformToFormError,
+} from '#utils/common';
 
 type PartialFormType = PartialForm<TeamCreateInput>;
 type FormSchema = ObjectSchema<PartialFormType>;
@@ -70,49 +76,51 @@ function TeamForm() {
     const [{ fetching: createPending }, createTeamMutate] = useCreateTeamMutation();
     const [{ fetching: updatePending }, updateTeamMutate] = useUpdateTeamMutation();
 
-    const handleMutation = useCallback(async (mutationData: PartialFormType) => {
-        const redirectPath = 'teams';
-        const alertMessage = `Team ${id ? 'updated' : 'created'} successfully`;
+    const handleCreate = useCallback(async (mutationData: PartialFormType) => {
+        const res = await createTeamMutate({
+            data: mutationData as TeamCreateInput,
+        });
+        const result = res.data?.createTeam;
 
-        if (id) {
-            const res = await updateTeamMutate({
-                id,
-                data: mutationData as TeamUpdateInput,
-            });
-            const result = res.data?.updateTeam;
-            if (result?.ok) {
-                navigate(redirectPath);
-                alert.show(alertMessage, { variant: 'success' });
-            } else if (result?.errors) {
-                setError(result.errors);
-                alert.show(result.errors, { variant: 'danger' });
-            } else {
-                alert.show(errorMessage, { variant: 'danger' });
-            }
+        if (isDefined(result) && result.ok) {
+            navigate('teams');
+            alert.show('Team created successfully', { variant: 'success' });
+        } else if (isDefined(result) && isDefined(result.errors)) {
+            setError(transformToFormError(result.errors));
+            alert.show(errorMessage, { variant: 'danger' });
         } else {
-            const res = await createTeamMutate({
-                data: mutationData as TeamCreateInput,
-            });
-            const result = res.data?.createTeam;
-            if (result?.ok) {
-                navigate(redirectPath);
-                alert.show(alertMessage, { variant: 'success' });
-            } else if (result?.errors) {
-                setError(result?.errors);
-                alert.show(result?.errors?.message ?? errorMessage, { variant: 'danger' });
-            } else {
-                alert.show(errorMessage, { variant: 'danger' });
-            }
+            alert.show(errorMessage, { variant: 'danger' });
         }
-    }, [alert, updateTeamMutate, id, navigate, setError, createTeamMutate]);
+    }, [createTeamMutate, navigate, alert, setError]);
+
+    const handleUpdate = useCallback(async (mutationData: PartialFormType) => {
+        if (isNotDefined(id)) {
+            return;
+        }
+        const res = await updateTeamMutate({
+            id,
+            data: mutationData as TeamUpdateInput,
+        });
+        const result = res.data?.updateTeam;
+
+        if (isDefined(result) && result.ok) {
+            navigate('teams');
+            alert.show('Team updated successfully', { variant: 'success' });
+        } else if (isDefined(result) && isDefined(result.errors)) {
+            setError(transformToFormError(result.errors));
+            alert.show(errorMessage, { variant: 'danger' });
+        } else {
+            alert.show(errorMessage, { variant: 'danger' });
+        }
+    }, [updateTeamMutate, id, navigate, alert, setError]);
 
     const handleFormSubmit = useCallback(
         () => createSubmitHandler(
             validate,
             setError,
-            handleMutation,
+            isDefined(id) ? handleUpdate : handleCreate,
         )(),
-        [validate, setError, handleMutation],
+        [validate, setError, id, handleUpdate, handleCreate],
     );
 
     const error = getErrorObject(formError);

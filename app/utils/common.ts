@@ -82,7 +82,13 @@ export function getSafeUrl(value: string | null | undefined): string | undefined
     }
     try {
         const parsed = new URL(value);
-        return SAFE_URL_PROTOCOLS.includes(parsed.protocol) ? parsed.href : undefined;
+        if (!SAFE_URL_PROTOCOLS.includes(parsed.protocol)) {
+            return undefined;
+        }
+        if (typeof window !== 'undefined' && parsed.origin === window.location.origin) {
+            return undefined;
+        }
+        return parsed.href;
     } catch {
         return undefined;
     }

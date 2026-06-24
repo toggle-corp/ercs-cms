@@ -11,7 +11,6 @@ import {
     ListView,
     NumberInput,
     RadioInput,
-    SelectInput,
     TextInput,
 } from '@ifrc-go/ui';
 import {
@@ -29,21 +28,21 @@ import {
 } from '@togglecorp/toggle-form';
 
 import EmbedPreview from '#components/EmbedPreview';
+import NonFieldError from '#components/NonFieldError';
 import RegionSelectInput from '#components/RegionSelectInput';
 import {
     AdminAreaLevel,
     DashboardPage,
     type ExternalDashboardCreateInput,
     type ExternalDashboardUpdateInput,
-    useCreateExternalDashboardMutation,
-    useExternalDashboardDetailQuery,
-    useUpdateExternalDashboardMutation,
+    useCreateResourceDashboardMutation,
+    useResourceDashboardDetailQuery,
+    useUpdateResourceDashboardMutation,
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
 import useRouting from '#hooks/useRouting';
 import {
     errorMessage,
-    keySelector,
     labelSelector,
     safeUrlCondition,
     statusOptions,
@@ -55,38 +54,37 @@ type PartialFormType = PartialForm<ExternalDashboardCreateInput>;
 type FormSchema = ObjectSchema<PartialFormType>;
 type FormSchemaFields = ReturnType<FormSchema['fields']>;
 
-const worksSchema: FormSchema = {
+const dashboardSchema: FormSchema = {
     fields: (): FormSchemaFields => ({
-        page: {
-            required: true,
-        },
         title: {
             required: true,
             requiredValidation: requiredStringCondition,
         },
-        description: {},
-        region: {},
         url: {
             required: true,
             requiredValidation: requiredStringCondition,
             validations: [safeUrlCondition],
         },
-        isActive: {},
+        page: {
+            required: true,
+        },
+        capacityAndResource: {
+            required: true,
+        },
+        description: {},
+        region: {},
         order: {},
+        isActive: {},
     }),
 };
 
-const defaultEditFormValue: PartialFormType = {
+const defaultFormValue: PartialFormType = {
+    page: DashboardPage.CapacityResources,
     isActive: false,
 };
 
-const pageOptions = [
-    { key: DashboardPage.ProjectMapping, label: 'Project Mapping' },
-    { key: DashboardPage.EmergencyResponse, label: 'Emergency Responses' },
-];
-
-function WorksForm() {
-    const { id } = useParams();
+function ResourceDashboardForm() {
+    const { id, dashboard } = useParams();
     const navigate = useRouting();
     const alert = useAlert();
 
@@ -97,86 +95,96 @@ function WorksForm() {
         validate,
         setError,
         setValue,
-    } = useForm(worksSchema, { value: defaultEditFormValue });
+    } = useForm(dashboardSchema, { value: { ...defaultFormValue, capacityAndResource: id } });
 
-    const [{ data, fetching: worksDetailFetch }] = useExternalDashboardDetailQuery({
-        variables: { id: isDefined(id) ? id : '' },
-        pause: isNotDefined(id),
+    const [{ data, fetching: detailFetching }] = useResourceDashboardDetailQuery({
+        variables: { id: dashboard ?? '' },
+        pause: !dashboard,
     });
 
-    const [
-        { fetching: createPending },
-        createExternalDashboard,
-    ] = useCreateExternalDashboardMutation();
-    const [
-        { fetching: updatePending },
-        updateExternalDashboard,
-    ] = useUpdateExternalDashboardMutation();
+    const [{ fetching: createPending }, createDashboard] = useCreateResourceDashboardMutation();
+    const [{ fetching: updatePending }, updateDashboard] = useUpdateResourceDashboardMutation();
 
-    const pending = createPending || updatePending || worksDetailFetch;
+    const pending = createPending || updatePending || detailFetching;
 
     const handleCreate = useCallback(async (mutationData: PartialFormType) => {
         const createPayload = removeNull(mutationData) as ExternalDashboardCreateInput;
-        const res = await createExternalDashboard({ data: createPayload });
+        const res = await createDashboard({
+            data: createPayload,
+        });
         const result = res.data?.createExternalDashboard;
 
         if (isDefined(result) && result.ok) {
-            navigate('ourWorks');
-            alert.show('Initiative created successfully', { variant: 'success' });
+            alert.show('Dashboard created successfully', { variant: 'success' });
+            if (isDefined(id)) {
+                navigate('resourceDashboards', { id });
+            }
         } else if (isDefined(result) && isDefined(result.errors)) {
             setError(transformToFormError(result.errors));
             alert.show(errorMessage, { variant: 'danger' });
         } else {
             alert.show(errorMessage, { variant: 'danger' });
         }
-    }, [createExternalDashboard, navigate, alert, setError]);
+    }, [createDashboard, id, navigate, alert, setError]);
 
     const handleUpdate = useCallback(async (mutationData: PartialFormType) => {
-        if (isNotDefined(id)) {
+        if (isNotDefined(dashboard)) {
             return;
         }
         const updatePayload = removeNull(mutationData) as ExternalDashboardUpdateInput;
-        const res = await updateExternalDashboard({ id, data: updatePayload });
+        const res = await updateDashboard({
+            id: dashboard,
+            data: updatePayload,
+        });
         const result = res.data?.updateExternalDashboard;
 
         if (isDefined(result) && result.ok) {
-            navigate('ourWorks');
-            alert.show('Initiative updated successfully', { variant: 'success' });
+            alert.show('Dashboard updated successfully', { variant: 'success' });
+            if (isDefined(id)) {
+                navigate('resourceDashboards', { id });
+            }
         } else if (isDefined(result) && isDefined(result.errors)) {
             setError(transformToFormError(result.errors));
             alert.show(errorMessage, { variant: 'danger' });
         } else {
             alert.show(errorMessage, { variant: 'danger' });
         }
-    }, [updateExternalDashboard, id, navigate, alert, setError]);
+    }, [updateDashboard, dashboard, id, navigate, alert, setError]);
 
     const handleFormSubmit = useCallback(
         () => createSubmitHandler(
             validate,
             setError,
-            isDefined(id) ? handleUpdate : handleCreate,
+            isDefined(dashboard) ? handleUpdate : handleCreate,
         )(),
-        [validate, setError, id, handleUpdate, handleCreate],
+        [validate, setError, dashboard, handleUpdate, handleCreate],
     );
 
     const handleCancel = useCallback(() => {
-        navigate('ourWorks');
-    }, [navigate]);
+        if (isDefined(id)) {
+            navigate('resourceDashboards', { id });
+        }
+    }, [id, navigate]);
 
     const error = getErrorObject(formError);
 
-    useEffect(() => {
-        if (isNotDefined(data?.externalDashboard)) {
-            return;
-        }
-        const { regionId, ...otherValues } = removeNull(data.externalDashboard);
-        setValue({
-            ...otherValues,
-            region: regionId ?? undefined,
-        });
-    }, [data, setValue]);
+    const dashboardData = data?.externalDashboard;
 
-    if (worksDetailFetch || createPending || updatePending) {
+    useEffect(() => {
+        if (!detailFetching && isDefined(dashboardData)) {
+            const {
+                regionId,
+                ...otherValues
+            } = removeNull(dashboardData);
+            setValue({
+                ...otherValues,
+                region: regionId ?? undefined,
+                capacityAndResource: id,
+            });
+        }
+    }, [detailFetching, id, dashboardData, setValue]);
+
+    if (detailFetching) {
         return (
             <BlockLoading
                 withoutBorder
@@ -188,10 +196,10 @@ function WorksForm() {
 
     return (
         <Container
-            heading={isDefined(id) ? 'Edit Initiative' : 'Create New Initiatives'}
-            headerDescription={isDefined(id)
-                ? 'Manage and update emergency response or project mapping on ongoing and initiative works'
-                : 'Create a emergency response or project mapping on ongoing and initiative works'}
+            heading={isDefined(dashboard) ? 'Edit Dashboard' : 'Create Dashboard'}
+            headerDescription={isDefined(dashboard)
+                ? 'Manage and update the dashboard'
+                : 'Create a new dashboard for this capacity and resource'}
             withPadding
             footerActions={(
                 <ListView>
@@ -213,27 +221,14 @@ function WorksForm() {
             )}
         >
             <ListView layout="grid" withSidebar>
-
                 <ListView layout="block">
-                    <InputSection
-                        title="Operations"
-                        description="Select the operation"
-                        withAsteriskOnTitle
-                    >
-                        <SelectInput
-                            name="page"
-                            value={value.page}
-                            onChange={setFieldValue}
-                            options={pageOptions}
-                            keySelector={keySelector}
-                            labelSelector={labelSelector}
-                            error={error?.page}
-                            disabled={pending}
-                        />
-                    </InputSection>
+                    <NonFieldError
+                        error={formError}
+                        withFallbackError
+                    />
                     <InputSection
                         title="Title"
-                        description="Enter the title name of the dashboard"
+                        description="Enter the title of the dashboard"
                         withAsteriskOnTitle
                     >
                         <TextInput
@@ -246,26 +241,13 @@ function WorksForm() {
                     </InputSection>
                     <InputSection
                         title="Description"
-                        description="Enter the description about the dashboard"
+                        description="Enter the description of the dashboard"
                     >
                         <TextInput
                             name="description"
                             value={value.description}
                             onChange={setFieldValue}
                             error={error?.description}
-                            disabled={pending}
-                        />
-                    </InputSection>
-                    <InputSection
-                        title="Region"
-                        description="Select the region"
-                    >
-                        <RegionSelectInput
-                            name="region"
-                            level={AdminAreaLevel.Region}
-                            value={value.region}
-                            onChange={setFieldValue}
-                            error={error?.region}
                             disabled={pending}
                         />
                     </InputSection>
@@ -283,17 +265,15 @@ function WorksForm() {
                         />
                     </InputSection>
                     <InputSection
-                        title="Status"
-                        description="Choose if the dashboard is to be active or inactive "
+                        title="Region"
+                        description="Select the region"
                     >
-                        <RadioInput
-                            name="isActive"
-                            value={value.isActive}
+                        <RegionSelectInput
+                            name="region"
+                            level={AdminAreaLevel.Region}
+                            value={value.region}
                             onChange={setFieldValue}
-                            options={statusOptions}
-                            keySelector={valueSelector}
-                            labelSelector={labelSelector}
-                            error={error?.isActive}
+                            error={error?.region}
                             disabled={pending}
                         />
                     </InputSection>
@@ -309,12 +289,26 @@ function WorksForm() {
                             disabled={pending}
                         />
                     </InputSection>
+                    <InputSection
+                        title="Status"
+                        description="Choose if the dashboard is to be active or inactive"
+                    >
+                        <RadioInput
+                            name="isActive"
+                            value={value.isActive}
+                            onChange={setFieldValue}
+                            options={statusOptions}
+                            keySelector={valueSelector}
+                            labelSelector={labelSelector}
+                            error={error?.isActive}
+                            disabled={pending}
+                        />
+                    </InputSection>
                 </ListView>
-
                 <EmbedPreview url={value.url} />
             </ListView>
         </Container>
     );
 }
 
-export default WorksForm;
+export default ResourceDashboardForm;
