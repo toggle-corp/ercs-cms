@@ -8,11 +8,8 @@ import {
     BlockLoading,
     Button,
     Container,
-    Description,
-    InlineLayout,
     InputSection,
     ListView,
-    RawFileInput,
     TextInput,
 } from '@ifrc-go/ui';
 import {
@@ -28,6 +25,7 @@ import {
     useForm,
 } from '@togglecorp/toggle-form';
 
+import FileInput from '#components/FileInput';
 import NonFieldError from '#components/NonFieldError';
 import {
     ReportContentType,
@@ -75,8 +73,6 @@ const defaultFormValue: PartialFormType = {
     reportType: ReportTypeEnum.OnlineInteractive,
 };
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-
 function OnlineInteractiveForm() {
     const { id } = useParams();
     const navigate = useRouting();
@@ -109,15 +105,11 @@ function OnlineInteractiveForm() {
         ? value.file.name
         : detailData?.report?.file?.name?.split('/').pop();
 
-    const handleFileInputChange = useCallback(
+    const handleFileChange = useCallback(
         (file: File | undefined, name: 'file') => {
-            if (isDefined(file) && file.size > MAX_FILE_SIZE) {
-                alert.show('File must be 5MB or smaller', { variant: 'danger' });
-                return;
-            }
             setFieldValue(file, name);
         },
-        [alert, setFieldValue],
+        [setFieldValue],
     );
 
     const handleResult = useCallback((
@@ -252,25 +244,13 @@ function OnlineInteractiveForm() {
                     description="Upload the online interactive file (max 5MB)"
                     withAsteriskOnTitle
                 >
-                    <InlineLayout
-                        spacing="sm"
-                        contentAlignment="center"
-                        before={(
-                            <RawFileInput
-                                name="file"
-                                onChange={handleFileInputChange}
-                                disabled={pending}
-                                styleVariant="outline"
-                            >
-                                {isDefined(fileName) ? 'Change file' : 'Upload file'}
-                            </RawFileInput>
-                        )}
-                    >
-                        <Description>
-                            {isDefined(fileName) ? fileName : 'Please upload a file'}
-                        </Description>
-                    </InlineLayout>
-                    <NonFieldError error={error?.file} />
+                    <FileInput
+                        name="file"
+                        fileName={fileName}
+                        onChange={handleFileChange}
+                        error={error?.file}
+                        disabled={pending}
+                    />
                 </InputSection>
             </ListView>
         </Container>
