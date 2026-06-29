@@ -34,11 +34,11 @@ import {
     type TeamMemberCreateInput,
     type TeamMemberUpdateInput,
     useCreateTeamMemberMutation,
-    useEnumsQuery,
     useTeamMemberDetailsQuery,
     useUpdateTeamMemberMutation,
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
+import useGlobalEnums from '#hooks/useGlobalEnums';
 import useRouting from '#hooks/useRouting';
 import {
     errorMessage,
@@ -98,9 +98,9 @@ function TeamMemberForm() {
     const [{ fetching: createPending }, createTeamMemberMutate] = useCreateTeamMemberMutation();
     const [{ fetching: updatePending }, updateTeamMemberMutate] = useUpdateTeamMemberMutation();
 
-    const [{ data: enumsData }] = useEnumsQuery();
-
-    const sexOptions = enumsData?.enums?.TeamMemberSex;
+    const {
+        teamMemberSex: sexOptions,
+    } = useGlobalEnums();
 
     const handleCreate = useCallback(async (mutationData: PartialFormType) => {
         const res = await createTeamMemberMutate({

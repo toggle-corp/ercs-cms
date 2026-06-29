@@ -191,6 +191,25 @@ const galleries: RouteConfig = {
     visibility: 'is-authenticated',
 };
 
+const links: RouteConfig = {
+    index: true,
+    path: '/links',
+    load: () => import('#views/Links'),
+    visibility: 'is-authenticated',
+};
+
+const createLink: RouteConfig = {
+    path: '/links/new',
+    load: () => import('#views/Links/LinkForm'),
+    visibility: 'is-authenticated',
+};
+
+const editLink: RouteConfig = {
+    path: '/links/:id/edit',
+    load: () => import('#views/Links/LinkForm'),
+    visibility: 'is-authenticated',
+};
+
 const routes = {
     home,
     login,
@@ -221,6 +240,9 @@ const routes = {
     onlineInteractive,
     galleries,
     editTeamMember,
+    links,
+    createLink,
+    editLink,
 } satisfies Record<string, RouteConfig>;
 
 export type RouteKeys = keyof typeof routes;
