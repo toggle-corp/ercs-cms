@@ -123,6 +123,18 @@ const dataAndReports: RouteConfig = {
     visibility: 'is-authenticated',
 };
 
+const createDataAndReports: RouteConfig = {
+    path: '/data-and-reports/new',
+    load: () => import('#views/DataAndReports/DataAndReportsForm'),
+    visibility: 'is-authenticated',
+};
+
+const editDataAndReports: RouteConfig = {
+    path: '/data-and-reports/:id/edit',
+    load: () => import('#views/DataAndReports/DataAndReportsForm'),
+    visibility: 'is-authenticated',
+};
+
 const capacityAndResources: RouteConfig = {
     index: true,
     path: '/capacity-and-resources',
@@ -167,6 +179,8 @@ const routes = {
     createPreparedness,
     editPreparedness,
     dataAndReports,
+    createDataAndReports,
+    editDataAndReports,
     capacityAndResources,
     documents,
     onlineInteractive,

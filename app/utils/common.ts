@@ -23,6 +23,15 @@ export function valueSelector<T>(item: { value: T }) {
     return item.value;
 }
 
+export function omitKeys<T extends object, K extends keyof T>(
+    obj: T,
+    keys: readonly K[],
+): Omit<T, K> {
+    const result = { ...obj };
+    keys.forEach((key) => { delete result[key]; });
+    return result;
+}
+
 // Boolean values for RadioInput (used in forms)
 export const statusOptions = [
     { label: 'Active', value: true },
