@@ -223,6 +223,18 @@ const editLink: RouteConfig = {
     visibility: 'is-authenticated',
 };
 
+const createGalleryAlbum: RouteConfig = {
+    path: '/galleries/new',
+    load: () => import('#views/Galleries/GalleryForm'),
+    visibility: 'is-authenticated',
+};
+
+const editGalleryAlbum: RouteConfig = {
+    path: '/galleries/:id/edit',
+    load: () => import('#views/Galleries/GalleryForm'),
+    visibility: 'is-authenticated',
+};
+
 const routes = {
     home,
     login,
@@ -254,6 +266,8 @@ const routes = {
     createOnlineInteractive,
     editOnlineInteractive,
     galleries,
+    createGalleryAlbum,
+    editGalleryAlbum,
     editTeamMember,
     links,
     createLink,
