@@ -14,7 +14,6 @@ const EXTERNAL_DASHBOARDS = gql`
                 page
                 pageDisplay
                 regionId
-                showOnHome
                 title
                 updatedAt
                 url

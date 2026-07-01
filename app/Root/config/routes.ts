@@ -142,6 +142,36 @@ const capacityAndResources: RouteConfig = {
     visibility: 'is-authenticated',
 };
 
+const createResources: RouteConfig = {
+    path: '/capacity-and-resources/new',
+    load: () => import('#views/CapacityAndResources/CapacityAndResourcesForm'),
+    visibility: 'is-authenticated',
+};
+
+const editResources: RouteConfig = {
+    path: '/capacity-and-resources/:id/edit',
+    load: () => import('#views/CapacityAndResources/CapacityAndResourcesForm'),
+    visibility: 'is-authenticated',
+};
+
+const resourceDashboards: RouteConfig = {
+    path: '/capacity-and-resources/:id/dashboards',
+    load: () => import('#views/CapacityAndResources/ResourceDashboards'),
+    visibility: 'is-authenticated',
+};
+
+const createResourceDashboard: RouteConfig = {
+    path: '/capacity-and-resources/:id/dashboards/create',
+    load: () => import('#views/CapacityAndResources/ResourceDashboards/ResourceDashboardForm'),
+    visibility: 'is-authenticated',
+};
+
+const editResourceDashboard: RouteConfig = {
+    path: '/capacity-and-resources/:id/dashboards/:dashboard/edit',
+    load: () => import('#views/CapacityAndResources/ResourceDashboards/ResourceDashboardForm'),
+    visibility: 'is-authenticated',
+};
+
 const documents: RouteConfig = {
     index: true,
     path: '/documents',
@@ -182,6 +212,11 @@ const routes = {
     createDataAndReports,
     editDataAndReports,
     capacityAndResources,
+    createResources,
+    editResources,
+    resourceDashboards,
+    createResourceDashboard,
+    editResourceDashboard,
     documents,
     onlineInteractive,
     galleries,

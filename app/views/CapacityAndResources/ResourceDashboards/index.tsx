@@ -2,6 +2,7 @@ import {
     useCallback,
     useMemo,
 } from 'react';
+import { useParams } from 'react-router';
 import { AddFillIcon } from '@ifrc-go/icons';
 import {
     Button,
@@ -16,14 +17,14 @@ import {
 import { isDefined } from '@togglecorp/fujs';
 
 import EditDeleteActions, { type Props as EditDeleteActionsProps } from '#components/EditDeleteActions';
-import Link, { type Props as LinkProps } from '#components/Link';
 import StatusCell from '#components/StatusCell';
 import {
     AdminAreaLevel,
-    type CapacityAndResourceFilter,
-    type CapacityAndResourcesQuery,
-    useCapacityAndResourcesQuery,
-    useDeleteCapacityAndResourceMutation,
+    type ExternalDashboardFilter,
+    type ResourceDashboardsQuery,
+    useCapacityAndResourceDetailQuery,
+    useDeleteResourceDashboardMutation,
+    useResourceDashboardsQuery,
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
 import useFilterState from '#hooks/useFilterState';
@@ -34,21 +35,23 @@ import {
     idSelector,
 } from '#utils/common';
 
-import CapacityAndResourcesFilter from './CapacityAndResourcesFilter';
+import ResourceDashboardsFilters from './ResourceDashboardsFilters';
 
-type ResourcesListItem = NonNullable<NonNullable<CapacityAndResourcesQuery['capacityAndResources']>['results'][number]> & { no: string };
+type DashboardListItem = NonNullable<NonNullable<ResourceDashboardsQuery['externalDashboards']>['results'][number]> & { no: string };
 
-export interface ResourcesFilterType extends Omit<CapacityAndResourceFilter, 'isActive'> {
+export interface DashboardFilterType extends Omit<ExternalDashboardFilter, 'isActive'> {
     isActive: string | undefined;
 }
 
-const defaultFilter: ResourcesFilterType = {
+const defaultFilter: DashboardFilterType = {
     isActive: undefined,
     search: undefined,
     regions: undefined,
 };
 
-function CapacityAndResourcesList() {
+function ResourceDashboards() {
+    const { id } = useParams();
+
     const {
         filter,
         rawFilter,
@@ -67,10 +70,16 @@ function CapacityAndResourcesList() {
 
     const regionMap = useRegionMap(AdminAreaLevel.Region);
 
-    const [, deleteCapacityAndResource] = useDeleteCapacityAndResourceMutation();
-    const [{ fetching, data }, reExecuteQuery] = useCapacityAndResourcesQuery({
+    const [{ data: detailData, fetching: detailFetching }] = useCapacityAndResourceDetailQuery({
+        variables: { id: id ?? '' },
+        pause: !id,
+    });
+
+    const [, deleteResourceDashboard] = useDeleteResourceDashboardMutation();
+    const [{ fetching, data }, reExecuteQuery] = useResourceDashboardsQuery({
         variables: {
             filters: {
+                capacityAndResources: isDefined(id) ? [id] : undefined,
                 isActive: isDefined(filter.isActive) ? filter.isActive === 'true' : undefined,
                 search: filter.search,
                 regions: filter.regions?.length === 0 ? undefined : filter.regions,
@@ -80,22 +89,23 @@ function CapacityAndResourcesList() {
                 offset,
             },
         },
+        pause: !id,
     });
 
-    const tableData: ResourcesListItem[] = useMemo(() => (
-        (data?.capacityAndResources?.results ?? []).map((resource, index) => ({
-            ...resource,
+    const tableData: DashboardListItem[] = useMemo(() => (
+        (data?.externalDashboards?.results ?? []).map((dashboard, index) => ({
+            ...dashboard,
             no: String((page - 1) * limit + index + 1),
         }))
     ), [page, data, limit]);
 
     const onDeleteClick = useCallback(
-        (id: string) => {
-            deleteCapacityAndResource({ id }).then((resp) => {
-                const result = resp.data?.deleteCapacityAndResource;
+        (dashboardId: string) => {
+            deleteResourceDashboard({ id: dashboardId }).then((resp) => {
+                const result = resp.data?.deleteExternalDashboard;
                 if (result?.ok) {
                     reExecuteQuery();
-                    alert.show('Resource deleted successfully', { variant: 'success' });
+                    alert.show('Dashboard deleted successfully', { variant: 'success' });
                 } else {
                     alert.show(errorMessage, { variant: 'danger' });
                 }
@@ -103,36 +113,31 @@ function CapacityAndResourcesList() {
                 alert.show(errorMessage, { variant: 'danger' });
             });
         },
-        [deleteCapacityAndResource, reExecuteQuery, alert],
+        [deleteResourceDashboard, reExecuteQuery, alert],
     );
 
     const columns = useMemo(() => [
-        createStringColumn<ResourcesListItem, string | number>(
+        createStringColumn<DashboardListItem, string | number>(
             'no',
             'No.',
             (item) => item.no,
         ),
-        createElementColumn<ResourcesListItem, string | number, LinkProps>(
+        createStringColumn<DashboardListItem, string | number>(
             'title',
             'Title',
-            Link,
-            (_, item) => ({
-                children: item.title,
-                to: 'resourceDashboards',
-                attrs: { id: item.id },
-            }),
+            (item) => item.title,
         ),
-        createStringColumn<ResourcesListItem, string | number>(
-            'dashboardsCount',
-            'Dashboards Count',
-            (item) => (isDefined(item.dashboardsCount) ? String(item.dashboardsCount) : '-'),
+        createStringColumn<DashboardListItem, string | number>(
+            'operation',
+            'Operation',
+            (item) => item.pageDisplay,
         ),
-        createStringColumn<ResourcesListItem, string | number>(
+        createStringColumn<DashboardListItem, string | number>(
             'region',
             'Region',
             (item) => (isDefined(item.regionId) ? regionMap[item.regionId] : '-'),
         ),
-        createElementColumn<ResourcesListItem, string | number, { isActive: boolean }>(
+        createElementColumn<DashboardListItem, string | number, { isActive: boolean }>(
             'status',
             'Status',
             StatusCell,
@@ -140,35 +145,38 @@ function CapacityAndResourcesList() {
                 isActive: datum.isActive,
             }),
         ),
-        createElementColumn<ResourcesListItem, string | number, EditDeleteActionsProps>(
+        createElementColumn<DashboardListItem, string | number, EditDeleteActionsProps>(
             'actions',
             '',
             EditDeleteActions,
             (_, datum) => ({
-                id: datum.id,
+                id: id ?? '',
+                dashboard: datum.id,
                 onDelete: onDeleteClick,
                 itemTitle: datum.title,
-                to: 'editResources',
+                to: 'editResourceDashboard',
             }),
             { columnWidth: 150 },
         ),
-    ], [onDeleteClick, regionMap]);
+    ], [onDeleteClick, id, regionMap]);
 
     const handleCreateClick = useCallback(() => {
-        navigate('createResources');
-    }, [navigate]);
+        if (isDefined(id)) {
+            navigate('createResourceDashboard', { id });
+        }
+    }, [navigate, id]);
 
     return (
         <Container
             withPadding
-            heading="Capacity and Resources"
+            heading={`${detailData?.capacityAndResource?.title} Dashboards`}
+            headerDescription="Track, organize, and update the dashboards for this capacity and resource"
             filters={(
-                <CapacityAndResourcesFilter
+                <ResourceDashboardsFilters
                     value={rawFilter}
                     onChange={setFilterField}
                 />
             )}
-            headerDescription="Track, organize, and update capacity and resources"
             headerActions={(
                 <Button
                     name={undefined}
@@ -182,7 +190,7 @@ function CapacityAndResourcesList() {
             footerActions={(
                 <Pager
                     activePage={page}
-                    itemsCount={data?.capacityAndResources?.totalCount ?? 0}
+                    itemsCount={data?.externalDashboards?.totalCount ?? 0}
                     maxItemsPerPage={limit}
                     onActivePageChange={setPage}
                 />
@@ -193,10 +201,10 @@ function CapacityAndResourcesList() {
                 columns={columns}
                 data={tableData}
                 filtered={filtered}
-                pending={fetching}
+                pending={fetching || detailFetching}
             />
         </Container>
     );
 }
 
-export default CapacityAndResourcesList;
+export default ResourceDashboards;
