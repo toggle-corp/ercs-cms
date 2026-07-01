@@ -6,10 +6,8 @@ import {
 import { type EntriesAsList } from '@togglecorp/toggle-form';
 
 import RegionSearchMultiSelectInput, { type AdminAreaItem } from '#components/RegionSearchMultiSelectInput';
-import {
-    AdminAreaLevel,
-    useEnumsQuery,
-} from '#generated/types/graphql';
+import { AdminAreaLevel } from '#generated/types/graphql';
+import useGlobalEnums from '#hooks/useGlobalEnums';
 import {
     keySelector,
     labelSelector,
@@ -25,13 +23,11 @@ export interface Props {
 }
 
 function UserFilter({ value, onChange }: Props) {
-    const [{ data: enumsData }] = useEnumsQuery();
-
     const [regionOptions, setRegionOptions] = useState<
         AdminAreaItem[] | undefined | null
     >([]);
 
-    const roleOptions = enumsData?.enums?.UserRole;
+    const { userRole: roleOptions } = useGlobalEnums();
 
     return (
         <>
