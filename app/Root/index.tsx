@@ -48,7 +48,10 @@ const gqlClient = new Client({
     suspense: false,
 });
 
-function Root() {
+// NOTE: useGlobalEnumsQuery needs UrqlProvider as an parent.
+// Since Root itself renders UrqlProvider, the hook must live in
+// RootContent a child component mounted inside that provider.
+function RootContent() {
     const [user, setUser] = useState<MeQuery['me'] | undefined>();
     const authenticated = !!user;
     const userContext: UserContextInterface = useMemo(() => ({
@@ -69,25 +72,31 @@ function Root() {
     }), [globalEnumsData]);
 
     return (
+        <UserContext.Provider value={userContext}>
+            <GlobalEnumsContext.Provider value={globalEnumsContext}>
+                <AlertContext.Provider value={alertContextValue}>
+                    <AlertContainer />
+                    <Suspense
+                        fallback={(
+                            <PreloadMessage>
+                                {appTitle}
+                                {' '}
+                                loading...
+                            </PreloadMessage>
+                        )}
+                    >
+                        <Outlet />
+                    </Suspense>
+                </AlertContext.Provider>
+            </GlobalEnumsContext.Provider>
+        </UserContext.Provider>
+    );
+}
+
+function Root() {
+    return (
         <UrqlProvider value={gqlClient}>
-            <UserContext.Provider value={userContext}>
-                <GlobalEnumsContext.Provider value={globalEnumsContext}>
-                    <AlertContext.Provider value={alertContextValue}>
-                        <AlertContainer />
-                        <Suspense
-                            fallback={(
-                                <PreloadMessage>
-                                    {appTitle}
-                                    {' '}
-                                    loading...
-                                </PreloadMessage>
-                            )}
-                        >
-                            <Outlet />
-                        </Suspense>
-                    </AlertContext.Provider>
-                </GlobalEnumsContext.Provider>
-            </UserContext.Provider>
+            <RootContent />
         </UrqlProvider>
     );
 }

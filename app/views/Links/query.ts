@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { gql } from 'urql';
 
-const EXTERNAL_LINKS = gql`
-    query ExternalLinks($pagination: OffsetPaginationInput, $filters: LinkFilter) {
+const LINKS = gql`
+    query Links($pagination: OffsetPaginationInput, $filters: LinkFilter) {
         publicLinks(filters: $filters, pagination: $pagination) {
             totalCount
             results {
@@ -10,22 +10,8 @@ const EXTERNAL_LINKS = gql`
                 description
                 id
                 title
-                updatedAt
-                url
-            }
-        }
-    }
-`;
-
-const INTERNAL_LINKS = gql`
-    query InternalLinks($pagination: OffsetPaginationInput, $filters: LinkFilter) {
-        internalLinks(filters: $filters, pagination: $pagination) {
-            totalCount
-            results {
-                createdAt
-                description
-                id
-                title
+                linkType
+                linkTypeDisplay
                 updatedAt
                 url
             }

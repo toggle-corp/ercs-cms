@@ -1,14 +1,21 @@
 import {
     useCallback,
     useMemo,
+    useState,
 } from 'react';
 import { AddFillIcon } from '@ifrc-go/icons';
 import {
     Button,
     Container,
     DateInput,
+    Description,
+    InlineLayout,
+    ListView,
     Pager,
+    Tab,
     Table,
+    TabList,
+    Tabs,
     TextInput,
 } from '@ifrc-go/ui';
 import {
@@ -19,10 +26,11 @@ import {
 
 import EditDeleteActions, { type Props as EditDeleteActionsProps } from '#components/EditDeleteActions';
 import {
-    type InternalLinksQuery,
     type LinkFilter,
+    type LinkType,
+    LinkTypeEnum,
     useDeleteLinkMutation,
-    useInternalLinksQuery,
+    useLinksQuery,
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
 import useFilterState from '#hooks/useFilterState';
@@ -32,7 +40,7 @@ import {
     idSelector,
 } from '#utils/common';
 
-type InternalLinkListItem = NonNullable<NonNullable<InternalLinksQuery['internalLinks']>['results'][number]> & { no: string }
+type LinkListItem = NonNullable<LinkType> & { no: string }
 
 interface LinkFilterType extends Omit<LinkFilter, 'createdAt'> {
     createdAtGte: string | undefined;
@@ -40,11 +48,13 @@ interface LinkFilterType extends Omit<LinkFilter, 'createdAt'> {
 }
 
 const defaultFilter: LinkFilterType = {
+    linkType: undefined,
     search: undefined,
     createdAtGte: undefined,
     createdAtLte: undefined,
 };
 function Links() {
+    const [activeTab, setActiveTab] = useState<LinkTypeEnum>(LinkTypeEnum.Internal);
     const {
         filter,
         rawFilter,
@@ -67,6 +77,7 @@ function Links() {
             offset,
         },
         filters: {
+            linkType: filter.linkType,
             search: filter.search,
             createdAt: (filter.createdAtGte || filter.createdAtLte) ? {
                 gte: filter.createdAtGte,
@@ -75,9 +86,18 @@ function Links() {
         },
     }), [limit, offset, filter]);
 
-    const [{ fetching, data }, reExecuteQuery] = useInternalLinksQuery(
+    const [{ fetching, data }, reExecuteQuery] = useLinksQuery(
         { variables: queryVariables },
     );
+
+    const handleTabChanges = useCallback(
+        (name: LinkTypeEnum.Internal | LinkTypeEnum.External) => {
+            setActiveTab(name);
+            setFilterField(name, 'linkType');
+        },
+        [setFilterField],
+    );
+
     const [, deleteLink] = useDeleteLinkMutation();
 
     const onDeleteClick = useCallback(
@@ -98,31 +118,36 @@ function Links() {
     );
 
     const tableData = useMemo(() => (
-        data?.internalLinks.results.map((user, index) => {
+        data?.publicLinks.results.map((user, index) => {
             const no = (page - 1) * limit + index + 1;
             return {
                 ...user,
                 no,
             };
-        }) as unknown as InternalLinkListItem[]), [page, data, limit]);
+        }) as unknown as LinkListItem[]), [page, data, limit]);
 
     const columns = useMemo(() => [
-        createStringColumn<InternalLinkListItem, string | number>(
+        createStringColumn<LinkListItem, string | number>(
             'no',
             'No.',
             (item) => item.no,
         ),
-        createDateColumn<InternalLinkListItem, string | number>(
+        createDateColumn<LinkListItem, string | number>(
             'createdAt',
             'Created At',
             (item) => item.createdAt,
         ),
-        createStringColumn<InternalLinkListItem, string | number>(
+        createStringColumn<LinkListItem, string | number>(
             'title',
             'Title',
             (item) => item.title ?? '-',
         ),
-        createElementColumn<InternalLinkListItem, string | number,
+        createStringColumn<LinkListItem, string | number>(
+            'linkType',
+            'Link Type',
+            (item) => item.linkTypeDisplay ?? '-',
+        ),
+        createElementColumn<LinkListItem, string | number,
             EditDeleteActionsProps>(
                 'actions',
                 '',
@@ -131,7 +156,7 @@ function Links() {
                     id: datum.id,
                     onDelete: onDeleteClick,
                     itemTitle: datum.title,
-                    to: 'editUser',
+                    to: 'editLink',
                 }),
                 { columnWidth: 150 },
             ),
@@ -142,59 +167,86 @@ function Links() {
     }, [navigate]);
 
     return (
-        <Container
-            withPadding
-            heading="Links"
-            headerDescription="Control and manage public-facing resource links"
-            filters={(
-                <>
-                    <DateInput
-                        name="createdAtGte"
-                        label="Created at start date"
-                        value={rawFilter.createdAtGte}
-                        onChange={setFilterField}
-                    />
-                    <DateInput
-                        name="createdAtLte"
-                        label="Created at end date"
-                        value={rawFilter.createdAtLte}
-                        onChange={setFilterField}
-                    />
-                    <TextInput
-                        name="search"
-                        placeholder="Search"
-                        value={rawFilter.search}
-                        onChange={setFilterField}
-                    />
-                </>
-            )}
-            footerActions={(
-                <Pager
-                    activePage={page}
-                    itemsCount={data?.internalLinks.totalCount ?? 0}
-                    maxItemsPerPage={limit}
-                    onActivePageChange={setPage}
-                />
-            )}
-            headerActions={(
-                <Button
-                    name={undefined}
-                    onClick={handleCreateClick}
-                    before={(<AddFillIcon />)}
-                    styleVariant="filled"
-                >
-                    Create
-                </Button>
-            )}
+        <Tabs
+            onChange={handleTabChanges}
+            value={activeTab}
         >
-            <Table
-                keySelector={idSelector}
-                columns={columns}
-                data={tableData}
-                filtered={filtered}
-                pending={fetching}
-            />
-        </Container>
+            <Container
+                withPadding
+                heading="Links"
+                headerDescription={(
+                    <ListView layout="block">
+                        <Description>
+                            Control and manage public-facing resource links
+                        </Description>
+                        <InlineLayout
+                            before={(
+                                <TabList>
+                                    <Tab
+                                        name={LinkTypeEnum.Internal}
+                                    >
+                                        Internal Links
+                                    </Tab>
+                                    <Tab
+                                        name={LinkTypeEnum.External}
+                                    >
+                                        External Links
+                                    </Tab>
+                                </TabList>
+                            )}
+                        />
+                    </ListView>
+                )}
+                filters={(
+                    <>
+                        <DateInput
+                            name="createdAtGte"
+                            label="Created at start date"
+                            value={rawFilter.createdAtGte}
+                            onChange={setFilterField}
+                        />
+                        <DateInput
+                            name="createdAtLte"
+                            label="Created at end date"
+                            value={rawFilter.createdAtLte}
+                            onChange={setFilterField}
+                        />
+                        <TextInput
+                            name="search"
+                            placeholder="Search"
+                            value={rawFilter.search}
+                            onChange={setFilterField}
+                        />
+                    </>
+                )}
+                footerActions={(
+                    <Pager
+                        activePage={page}
+                        itemsCount={data?.publicLinks.totalCount ?? 0}
+                        maxItemsPerPage={limit}
+                        onActivePageChange={setPage}
+                    />
+                )}
+                headerActions={(
+                    <Button
+                        name={undefined}
+                        onClick={handleCreateClick}
+                        before={(<AddFillIcon />)}
+                        styleVariant="filled"
+                    >
+                        Create
+                    </Button>
+                )}
+            >
+                <Table
+                    keySelector={idSelector}
+                    columns={columns}
+                    data={tableData}
+                    filtered={filtered}
+                    pending={fetching}
+                />
+            </Container>
+        </Tabs>
     );
 }
 
