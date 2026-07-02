@@ -1,10 +1,15 @@
+import { useState } from 'react';
 import {
     SelectInput,
     TextInput,
 } from '@ifrc-go/ui';
 import { type EntriesAsList } from '@togglecorp/toggle-form';
 
-import { type ThematicAreasQuery } from '#generated/types/graphql';
+import RegionSearchMultiSelectInput, { type AdminAreaItem } from '#components/RegionSearchMultiSelectInput';
+import {
+    AdminAreaLevel,
+    type ThematicAreasQuery,
+} from '#generated/types/graphql';
 import {
     idSelector,
     nameSelector,
@@ -21,8 +26,21 @@ export interface Props {
 }
 
 function DataAndReportsFilters({ value, onChange, thematicAreaOptions }: Props) {
+    const [regionOptions, setRegionOptions] = useState<
+        AdminAreaItem[] | undefined | null
+    >([]);
+
     return (
         <>
+            <RegionSearchMultiSelectInput
+                name="regions"
+                placeholder="Regions"
+                level={AdminAreaLevel.Region}
+                value={value.regions}
+                onOptionsChange={setRegionOptions}
+                options={regionOptions}
+                onChange={onChange}
+            />
             <SelectInput
                 name="thematicAreaId"
                 placeholder="Category"

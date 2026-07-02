@@ -18,6 +18,7 @@ import { isDefined } from '@togglecorp/fujs';
 import EditDeleteActions, { type Props as EditDeleteActionsProps } from '#components/EditDeleteActions';
 import StatusCell from '#components/StatusCell';
 import {
+    AdminAreaLevel,
     DashboardPage,
     type ExternalDashboardFilter,
     type ExternalDashboardsQuery,
@@ -26,6 +27,7 @@ import {
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
 import useFilterState from '#hooks/useFilterState';
+import useRegionMap from '#hooks/useRegionMap';
 import useRouting from '#hooks/useRouting';
 import {
     errorMessage,
@@ -44,6 +46,7 @@ const defaultFilter: WorksFilterType = {
     isActive: undefined,
     page: undefined,
     search: undefined,
+    regions: undefined,
 };
 
 function OurWorks() {
@@ -63,6 +66,8 @@ function OurWorks() {
     const alert = useAlert();
     const navigate = useRouting();
 
+    const regionMap = useRegionMap(AdminAreaLevel.Region);
+
     const queryVariables = useMemo(() => ({
         pagination: {
             limit,
@@ -71,6 +76,7 @@ function OurWorks() {
         filters: {
             isActive: isDefined(filter.isActive) ? filter.isActive === 'true' : undefined,
             search: filter.search || undefined,
+            regions: filter.regions?.length ? filter.regions : undefined,
             AND: {
                 page: DashboardPage.EmergencyResponse,
                 OR: {
@@ -128,6 +134,11 @@ function OurWorks() {
             'Operation',
             (item) => item.pageDisplay,
         ),
+        createStringColumn<WorksListItem, string | number>(
+            'region',
+            'Region',
+            (item) => (isDefined(item.regionId) ? regionMap[item.regionId] : '-'),
+        ),
         createElementColumn<WorksListItem, string | number, { isActive: boolean }>(
             'status',
             'Status',
@@ -148,7 +159,7 @@ function OurWorks() {
             }),
             { columnWidth: 150 },
         ),
-    ], [onDeleteClick]);
+    ], [onDeleteClick, regionMap]);
 
     const handleCreateClick = useCallback(() => {
         navigate('createWorks');

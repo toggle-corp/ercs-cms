@@ -1,6 +1,7 @@
 import {
     useCallback,
     useEffect,
+    useState,
 } from 'react';
 import { useParams } from 'react-router';
 import {
@@ -28,6 +29,7 @@ import {
     useForm,
 } from '@togglecorp/toggle-form';
 
+import ConfirmModal from '#components/ConfirmModal';
 import EmbedPreview from '#components/EmbedPreview';
 import RegionSelectInput from '#components/RegionSelectInput';
 import {
@@ -90,6 +92,8 @@ function PreparednessForm() {
     const navigate = useRouting();
     const alert = useAlert();
 
+    const [confirmShown, setConfirmShown] = useState(false);
+
     const {
         setFieldValue,
         error: formError,
@@ -150,7 +154,9 @@ function PreparednessForm() {
         }
     }, [updateExternalDashboard, id, navigate, alert, setError]);
 
-    const handleFormSubmit = useCallback(
+    const showOnHome = data?.externalDashboard?.showOnHome ?? false;
+
+    const runSubmit = useCallback(
         () => createSubmitHandler(
             validate,
             setError,
@@ -158,6 +164,23 @@ function PreparednessForm() {
         )(),
         [validate, setError, id, handleUpdate, handleCreate],
     );
+
+    const handleFormSubmit = useCallback(() => {
+        if (isDefined(id) && showOnHome && value.isActive === false) {
+            setConfirmShown(true);
+            return;
+        }
+        runSubmit();
+    }, [id, showOnHome, value.isActive, runSubmit]);
+
+    const handleConfirm = useCallback(() => {
+        setConfirmShown(false);
+        runSubmit();
+    }, [runSubmit]);
+
+    const handleConfirmCancel = useCallback(() => {
+        setConfirmShown(false);
+    }, []);
 
     const handleCancel = useCallback(() => {
         navigate('preparedness');
@@ -270,7 +293,7 @@ function PreparednessForm() {
                     </InputSection>
                     <InputSection
                         title="Embed link"
-                        description="Enter the embed link of the dashboard"
+                        description="Enter the Power BI report URL only (e.g., https://app.powerbi.com/...)"
                         withAsteriskOnTitle
                     >
                         <TextInput
@@ -311,6 +334,15 @@ function PreparednessForm() {
                 </ListView>
                 <EmbedPreview url={value.url} />
             </ListView>
+            {confirmShown && (
+                <ConfirmModal
+                    heading="Disable dashboard?"
+                    message="This dashboard is set to show on the homepage. Setting it as inactive will automatically remove it from the homepage quick links. Do you want to continue?"
+                    onConfirm={handleConfirm}
+                    onCancel={handleConfirmCancel}
+                    pending={pending}
+                />
+            )}
         </Container>
     );
 }

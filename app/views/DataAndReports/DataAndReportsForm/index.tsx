@@ -68,9 +68,7 @@ type PartialFormType = PartialForm<ReportCreateInput>;
 type FormSchema = ObjectSchema<PartialFormType>;
 type FormSchemaFields = ReturnType<FormSchema['fields']>;
 
-// NOTE: file/iframeUrl are required only on create. On edit the file already
-// exists server-side and is not re-uploaded, so requiring it would wrongly
-// block edits.
+// NOTE: file/iframeUrl are required only on create.
 function getReportSchema(isEditing: boolean): FormSchema {
     return {
         fields: (value): FormSchemaFields => {
@@ -96,7 +94,9 @@ function getReportSchema(isEditing: boolean): FormSchema {
                 thematicArea: {
                     required: true,
                 },
-                publishedAt: {},
+                publishedAt: {
+                    required: true,
+                },
             };
 
             if (value?.contentType === ReportContentType.Iframe) {
@@ -410,7 +410,7 @@ function DataAndReportsForm() {
                     {isIframe ? (
                         <InputSection
                             title="Embed link"
-                            description="Enter the embed link of the report"
+                            description="Enter the Power BI report URL only (e.g., https://app.powerbi.com/...)"
                             withAsteriskOnTitle
                         >
                             <TextInput
@@ -512,6 +512,7 @@ function DataAndReportsForm() {
                     <InputSection
                         title="Published At"
                         description="Select the published date"
+                        withAsteriskOnTitle
                     >
                         <DateInput
                             name="publishedAt"
