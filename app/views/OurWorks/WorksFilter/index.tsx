@@ -1,10 +1,15 @@
+import { useState } from 'react';
 import {
     SelectInput,
     TextInput,
 } from '@ifrc-go/ui';
 import { type EntriesAsList } from '@togglecorp/toggle-form';
 
-import { DashboardPage } from '#generated/types/graphql';
+import RegionSearchMultiSelectInput, { type AdminAreaItem } from '#components/RegionSearchMultiSelectInput';
+import {
+    AdminAreaLevel,
+    DashboardPage,
+} from '#generated/types/graphql';
 import {
     keySelector,
     labelSelector,
@@ -25,8 +30,21 @@ export interface Props {
 }
 
 function WorksFilter({ value, onChange }: Props) {
+    const [regionOptions, setRegionOptions] = useState<
+        AdminAreaItem[] | undefined | null
+    >([]);
+
     return (
         <>
+            <RegionSearchMultiSelectInput
+                name="regions"
+                placeholder="Regions"
+                level={AdminAreaLevel.Region}
+                value={value.regions}
+                onOptionsChange={setRegionOptions}
+                options={regionOptions}
+                onChange={onChange}
+            />
             <SelectInput
                 name="page"
                 placeholder="Operation"

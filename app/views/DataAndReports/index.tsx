@@ -16,11 +16,15 @@ import {
     createElementColumn,
     createStringColumn,
 } from '@ifrc-go/ui/utils';
-import { listToMap } from '@togglecorp/fujs';
+import {
+    isDefined,
+    listToMap,
+} from '@togglecorp/fujs';
 
 import CategoryModal from '#components/CategoryModal';
 import EditDeleteActions, { type Props as EditDeleteActionsProps } from '#components/EditDeleteActions';
 import {
+    AdminAreaLevel,
     type ReportFilter,
     type ReportsQuery,
     ReportTypeEnum,
@@ -30,6 +34,7 @@ import {
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
 import useFilterState from '#hooks/useFilterState';
+import useRegionMap from '#hooks/useRegionMap';
 import useRouting from '#hooks/useRouting';
 import {
     errorMessage,
@@ -40,11 +45,12 @@ import DataAndReportsFilters from './DataAndReportsFilters';
 
 type ReportsListItem = NonNullable<NonNullable<ReportsQuery['reports']>['results'][number]> & { no: string };
 
-export type DataAndReportsFilterType = Pick<ReportFilter, 'search' | 'thematicAreaId'>;
+export type DataAndReportsFilterType = Pick<ReportFilter, 'search' | 'thematicAreaId' | 'regions'>;
 
 const defaultFilter: DataAndReportsFilterType = {
     search: undefined,
     thematicAreaId: undefined,
+    regions: undefined,
 };
 
 function DataAndReports() {
@@ -78,8 +84,9 @@ function DataAndReports() {
         },
         filters: {
             reportType: ReportTypeEnum.Report,
-            search: filter.search || undefined,
+            title: filter.search ? { iContains: filter.search } : undefined,
             thematicAreaId: filter.thematicAreaId || undefined,
+            regions: filter.regions?.length ? filter.regions : undefined,
         },
     }), [limit, offset, filter]);
 
@@ -95,6 +102,8 @@ function DataAndReports() {
     ), [thematicAreasData]);
 
     const thematicAreaOptions = thematicAreasData?.thematicAreas?.results;
+
+    const regionMap = useRegionMap(AdminAreaLevel.Region);
 
     const tableData: ReportsListItem[] = useMemo(() => (
         (data?.reports?.results ?? []).map((report, index) => ({
@@ -142,6 +151,11 @@ function DataAndReports() {
             (item) => item.owner,
         ),
         createStringColumn<ReportsListItem, string | number>(
+            'region',
+            'Region',
+            (item) => (isDefined(item.regionId) ? regionMap[item.regionId] : '-'),
+        ),
+        createStringColumn<ReportsListItem, string | number>(
             'category',
             'Category',
             (item) => thematicAreaMap[item.thematicAreaId],
@@ -168,7 +182,7 @@ function DataAndReports() {
             }),
             { columnWidth: 150 },
         ),
-    ], [onDeleteClick, thematicAreaMap]);
+    ], [onDeleteClick, thematicAreaMap, regionMap]);
 
     const handleViewCategoryClick = useCallback(() => {
         setCategoryModalShown(true);

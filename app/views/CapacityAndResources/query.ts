@@ -122,6 +122,7 @@ const RESOURCE_DASHBOARD_DETAIL = gql`
             capacityAndResourceId
             order
             isActive
+            showOnHome
         }
     }
 `;

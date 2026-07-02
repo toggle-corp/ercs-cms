@@ -9,6 +9,7 @@ const REPORTS = gql`
                 createdAt
                 title
                 owner
+                regionId
                 reportType
                 reportTypeDisplay
                 thematicAreaId

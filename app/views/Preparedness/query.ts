@@ -57,6 +57,7 @@ const EXTERNAL_DASHBOARD_DETAIL = gql`
             order
             page
             regionId
+            showOnHome
             title
             url
         }
