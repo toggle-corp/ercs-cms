@@ -32,13 +32,13 @@ import RegionSelectInput from '#components/RegionSelectInput';
 import {
     AdminAreaLevel,
     useCreateUserMutation,
-    useEnumsQuery,
     type UserCreateInput,
     type UserUpdateInput,
     useUpdateUserMutation,
     useUserDetailQuery,
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
+import useGlobalEnums from '#hooks/useGlobalEnums';
 import useRouting from '#hooks/useRouting';
 import {
     errorMessage,
@@ -98,9 +98,9 @@ function UserForm() {
         pause: isNotDefined(id),
     });
 
-    const [{ data: enumsData }] = useEnumsQuery();
-
-    const roleOptions = enumsData?.enums?.UserRole;
+    const {
+        userRole: roleOptions,
+    } = useGlobalEnums();
 
     const [{ fetching: createPending }, createUserMutate] = useCreateUserMutation();
     const [{ fetching: updatePending }, updateUserMutate] = useUpdateUserMutation();

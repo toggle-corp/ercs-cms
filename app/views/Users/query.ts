@@ -97,21 +97,6 @@ const DELETE_USER = gql`
     }
 `;
 
-const ENUMS = gql`
-    query Enums {
-        enums {
-            UserRole {
-                key
-                label
-            }
-            TeamMemberSex {
-                key
-                label
-            }
-        }
-    }
-`;
-
 const ADMIN_AREAS = gql`
     query AdminAreas($filters: AdminAreaFilter) {
         adminAreas(filters: $filters) {

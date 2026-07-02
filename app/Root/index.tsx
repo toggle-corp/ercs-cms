@@ -20,8 +20,12 @@ import {
     appTitle,
     environment,
 } from '#config';
+import GlobalEnumsContext, { type GlobalEnumsContextInterface } from '#contexts/GlobalEnumsContext';
 import UserContext, { type UserContextInterface } from '#contexts/UserContext';
-import type { MeQuery } from '#generated/types/graphql';
+import {
+    type MeQuery,
+    useGlobalEnumsQuery,
+} from '#generated/types/graphql';
 import useAlertContextProviderValue from '#hooks/useAlertContextProviderValue';
 
 const COOKIE_NAME = `ERCS-${environment}-CSRFTOKEN`;
@@ -55,23 +59,34 @@ function Root() {
 
     const alertContextValue = useAlertContextProviderValue();
 
+    const [{ data: globalEnumsData }] = useGlobalEnumsQuery();
+
+    const globalEnumsContext: GlobalEnumsContextInterface = useMemo(() => ({
+        linkType: globalEnumsData?.enums.LinkType,
+        userRole: globalEnumsData?.enums.UserRole,
+        teamMemberSex: globalEnumsData?.enums.TeamMemberSex,
+        dashboardPage: globalEnumsData?.enums.DashboardPage,
+    }), [globalEnumsData]);
+
     return (
         <UrqlProvider value={gqlClient}>
             <UserContext.Provider value={userContext}>
-                <AlertContext.Provider value={alertContextValue}>
-                    <AlertContainer />
-                    <Suspense
-                        fallback={(
-                            <PreloadMessage>
-                                {appTitle}
-                                {' '}
-                                loading...
-                            </PreloadMessage>
-                        )}
-                    >
-                        <Outlet />
-                    </Suspense>
-                </AlertContext.Provider>
+                <GlobalEnumsContext.Provider value={globalEnumsContext}>
+                    <AlertContext.Provider value={alertContextValue}>
+                        <AlertContainer />
+                        <Suspense
+                            fallback={(
+                                <PreloadMessage>
+                                    {appTitle}
+                                    {' '}
+                                    loading...
+                                </PreloadMessage>
+                            )}
+                        >
+                            <Outlet />
+                        </Suspense>
+                    </AlertContext.Provider>
+                </GlobalEnumsContext.Provider>
             </UserContext.Provider>
         </UrqlProvider>
     );

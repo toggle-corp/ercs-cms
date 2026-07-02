@@ -37,17 +37,6 @@ const DELETE_EXTERNAL_DASHBOARD = gql`
     }
 `;
 
-const DASHBOARD_ENUMS = gql`
-    query PreparednessDashboardEnums {
-        enums {
-            DashboardPage {
-                key
-                label
-            }
-        }
-    }
-`;
-
 const EXTERNAL_DASHBOARD_DETAIL = gql`
     query PreparednessExternalDashboardDetail($id: ID!) {
         externalDashboard(id: $id) {
