@@ -37,7 +37,7 @@ const ME_QUERY = gql`
 
 function RootLayout() {
     use(fetchHealth);
-    const { setUser } = use(UserContext);
+    const { authenticated, setUser } = use(UserContext);
     const [{ fetching, data }] = useMeQuery();
 
     useEffect(() => {
@@ -49,7 +49,7 @@ function RootLayout() {
         }
     }, [fetching, data, setUser]);
 
-    if (fetching) {
+    if (fetching || (isDefined(data?.me) && !authenticated)) {
         return (
             <PreloadMessage>
                 Checking user session..
