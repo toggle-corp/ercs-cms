@@ -48,7 +48,7 @@ interface LinkFilterType extends Omit<LinkFilter, 'createdAt'> {
 }
 
 const defaultFilter: LinkFilterType = {
-    linkType: undefined,
+    linkType: LinkTypeEnum.Internal,
     search: undefined,
     createdAtGte: undefined,
     createdAtLte: undefined,
