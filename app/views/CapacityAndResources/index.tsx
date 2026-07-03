@@ -19,7 +19,6 @@ import EditDeleteActions, { type Props as EditDeleteActionsProps } from '#compon
 import Link, { type Props as LinkProps } from '#components/Link';
 import StatusCell from '#components/StatusCell';
 import {
-    AdminAreaLevel,
     type CapacityAndResourceFilter,
     type CapacityAndResourcesQuery,
     useCapacityAndResourcesQuery,
@@ -27,7 +26,6 @@ import {
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
 import useFilterState from '#hooks/useFilterState';
-import useRegionMap from '#hooks/useRegionMap';
 import useRouting from '#hooks/useRouting';
 import {
     errorMessage,
@@ -45,7 +43,6 @@ export interface ResourcesFilterType extends Omit<CapacityAndResourceFilter, 'is
 const defaultFilter: ResourcesFilterType = {
     isActive: undefined,
     search: undefined,
-    regions: undefined,
 };
 
 function CapacityAndResourcesList() {
@@ -65,15 +62,12 @@ function CapacityAndResourcesList() {
     const alert = useAlert();
     const navigate = useRouting();
 
-    const regionMap = useRegionMap(AdminAreaLevel.Region);
-
     const [, deleteCapacityAndResource] = useDeleteCapacityAndResourceMutation();
     const [{ fetching, data }, reExecuteQuery] = useCapacityAndResourcesQuery({
         variables: {
             filters: {
                 isActive: isDefined(filter.isActive) ? filter.isActive === 'true' : undefined,
-                search: filter.search,
-                regions: filter.regions?.length === 0 ? undefined : filter.regions,
+                title: filter.search ? { iContains: filter.search } : undefined,
             },
             pagination: {
                 limit,
@@ -127,11 +121,6 @@ function CapacityAndResourcesList() {
             'Dashboards Count',
             (item) => (isDefined(item.dashboardsCount) ? String(item.dashboardsCount) : '-'),
         ),
-        createStringColumn<ResourcesListItem, string | number>(
-            'region',
-            'Region',
-            (item) => (isDefined(item.regionId) ? regionMap[item.regionId] : '-'),
-        ),
         createElementColumn<ResourcesListItem, string | number, { isActive: boolean }>(
             'status',
             'Status',
@@ -152,7 +141,7 @@ function CapacityAndResourcesList() {
             }),
             { columnWidth: 150 },
         ),
-    ], [onDeleteClick, regionMap]);
+    ], [onDeleteClick]);
 
     const handleCreateClick = useCallback(() => {
         navigate('createResources');
