@@ -184,6 +184,19 @@ const onlineInteractive: RouteConfig = {
     load: () => import('#views/OnlineInteractive'),
     visibility: 'is-authenticated',
 };
+
+const createOnlineInteractive: RouteConfig = {
+    path: '/online-interactive/create',
+    load: () => import('#views/OnlineInteractive/OnlineInteractiveForm'),
+    visibility: 'is-authenticated',
+};
+
+const editOnlineInteractive: RouteConfig = {
+    path: '/online-interactive/:id/edit',
+    load: () => import('#views/OnlineInteractive/OnlineInteractiveForm'),
+    visibility: 'is-authenticated',
+};
+
 const galleries: RouteConfig = {
     index: true,
     path: '/galleries',
@@ -238,6 +251,8 @@ const routes = {
     editResourceDashboard,
     documents,
     onlineInteractive,
+    createOnlineInteractive,
+    editOnlineInteractive,
     galleries,
     editTeamMember,
     links,
