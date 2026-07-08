@@ -39,6 +39,7 @@ import useFilterState from '#hooks/useFilterState';
 import {
     errorMessage,
     idSelector,
+    transformToFormError,
 } from '#utils/common';
 
 type ThematicArea = NonNullable<NonNullable<ThematicAreasQuery['thematicAreas']>['results'][number]>;
@@ -146,11 +147,17 @@ function CategoryModal(props: Props) {
     const actionPending = createPending || updatePending || deletePending;
 
     const handleResult = useCallback((
-        ok: boolean | undefined,
+        result: { ok?: boolean | null; errors?: unknown } | null | undefined,
         successMessage: string,
     ) => {
-        if (!ok) {
-            alert.show(errorMessage, { variant: 'danger' });
+        if (!result?.ok) {
+            const serverErrors = isDefined(result?.errors)
+                ? transformToFormError(result?.errors as Parameters<typeof transformToFormError>[0])
+                : undefined;
+            const messages = serverErrors
+                ? Object.values(serverErrors).filter(isDefined).join(' ')
+                : undefined;
+            alert.show(messages || errorMessage, { variant: 'danger' });
             return;
         }
         setCategoryName(undefined);
@@ -166,7 +173,7 @@ function CategoryModal(props: Props) {
             return;
         }
         createThematicArea({ data: { name } }).then((resp) => {
-            handleResult(resp.data?.createThematicArea?.ok, 'Category added successfully');
+            handleResult(resp.data?.createThematicArea, 'Category added successfully');
         }).catch(() => {
             alert.show(errorMessage, { variant: 'danger' });
         });
@@ -178,7 +185,7 @@ function CategoryModal(props: Props) {
             return;
         }
         updateThematicArea({ id: editingId, data: { name } }).then((resp) => {
-            handleResult(resp.data?.updateThematicArea?.ok, 'Category updated successfully');
+            handleResult(resp.data?.updateThematicArea, 'Category updated successfully');
         }).catch(() => {
             alert.show(errorMessage, { variant: 'danger' });
         });
@@ -196,7 +203,7 @@ function CategoryModal(props: Props) {
 
     const handleDelete = useCallback((id: string) => {
         deleteThematicArea({ id }).then((resp) => {
-            handleResult(resp.data?.deleteThematicArea?.ok, 'Category deleted successfully');
+            handleResult(resp.data?.deleteThematicArea, 'Category deleted successfully');
         }).catch(() => {
             alert.show(errorMessage, { variant: 'danger' });
         });

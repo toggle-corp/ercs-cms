@@ -1,12 +1,12 @@
 import {
     useCallback,
     useEffect,
-    useState,
 } from 'react';
 import { useParams } from 'react-router';
 import {
     BlockLoading,
     Button,
+    ConfirmButton,
     Container,
     InputSection,
     ListView,
@@ -28,7 +28,6 @@ import {
     useForm,
 } from '@togglecorp/toggle-form';
 
-import ConfirmModal from '#components/ConfirmModal';
 import EmbedPreview from '#components/EmbedPreview';
 import NonFieldError from '#components/NonFieldError';
 import RegionSelectInput from '#components/RegionSelectInput';
@@ -89,8 +88,6 @@ function ResourceDashboardForm() {
     const { id, dashboard } = useParams();
     const navigate = useRouting();
     const alert = useAlert();
-
-    const [confirmShown, setConfirmShown] = useState(false);
 
     const {
         setFieldValue,
@@ -157,7 +154,7 @@ function ResourceDashboardForm() {
 
     const showOnHome = data?.externalDashboard?.showOnHome ?? false;
 
-    const runSubmit = useCallback(
+    const handleFormSubmit = useCallback(
         () => createSubmitHandler(
             validate,
             setError,
@@ -166,22 +163,7 @@ function ResourceDashboardForm() {
         [validate, setError, dashboard, handleUpdate, handleCreate],
     );
 
-    const handleFormSubmit = useCallback(() => {
-        if (isDefined(dashboard) && showOnHome && value.isActive === false) {
-            setConfirmShown(true);
-            return;
-        }
-        runSubmit();
-    }, [dashboard, showOnHome, value.isActive, runSubmit]);
-
-    const handleConfirm = useCallback(() => {
-        setConfirmShown(false);
-        runSubmit();
-    }, [runSubmit]);
-
-    const handleConfirmCancel = useCallback(() => {
-        setConfirmShown(false);
-    }, []);
+    const requiresConfirmation = isDefined(dashboard) && showOnHome && value.isActive === false;
 
     const handleCancel = useCallback(() => {
         if (isDefined(id)) {
@@ -232,14 +214,27 @@ function ResourceDashboardForm() {
                     >
                         Cancel
                     </Button>
-                    <Button
-                        name={undefined}
-                        onClick={handleFormSubmit}
-                        styleVariant="filled"
-                        disabled={pending}
-                    >
-                        Save
-                    </Button>
+                    {requiresConfirmation ? (
+                        <ConfirmButton
+                            name={undefined}
+                            onConfirm={handleFormSubmit}
+                            confirmHeading="Disable dashboard?"
+                            confirmMessage="This dashboard is set to show on the homepage. Setting it as inactive will automatically remove it from the homepage quick links. Do you want to continue?"
+                            styleVariant="filled"
+                            disabled={pending}
+                        >
+                            Save
+                        </ConfirmButton>
+                    ) : (
+                        <Button
+                            name={undefined}
+                            onClick={handleFormSubmit}
+                            styleVariant="filled"
+                            disabled={pending}
+                        >
+                            Save
+                        </Button>
+                    )}
                 </ListView>
             )}
         >
@@ -330,15 +325,6 @@ function ResourceDashboardForm() {
                 </ListView>
                 <EmbedPreview url={value.url} />
             </ListView>
-            {confirmShown && (
-                <ConfirmModal
-                    heading="Disable dashboard?"
-                    message="This dashboard is set to show on the homepage. Setting it as inactive will automatically remove it from the homepage quick links. Do you want to continue?"
-                    onConfirm={handleConfirm}
-                    onCancel={handleConfirmCancel}
-                    pending={pending}
-                />
-            )}
         </Container>
     );
 }

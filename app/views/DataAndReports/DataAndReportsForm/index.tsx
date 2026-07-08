@@ -9,10 +9,7 @@ import {
     Button,
     Container,
     DateInput,
-    Description,
     Image,
-    InlineLayout,
-    InputError,
     InputSection,
     ListView,
     RadioInput,
@@ -27,7 +24,6 @@ import {
 import {
     createSubmitHandler,
     getErrorObject,
-    getErrorString,
     type ObjectSchema,
     type PartialForm,
     removeNull,
@@ -36,6 +32,7 @@ import {
 } from '@togglecorp/toggle-form';
 
 import EmbedPreview from '#components/EmbedPreview';
+import FileInput from '#components/FileInput';
 import NonFieldError from '#components/NonFieldError';
 import RegionSelectInput from '#components/RegionSelectInput';
 import {
@@ -197,15 +194,18 @@ function DataAndReportsForm() {
         }
     }, [coverImagePreview, value.coverImage]);
 
-    const handleFileInputChange = useCallback(
-        (file: File | undefined, name: 'coverImage' | 'file') => {
-            if (isDefined(file) && file.size > MAX_FILE_SIZE) {
-                alert.show('File must be 5MB or smaller', { variant: 'danger' });
-                return;
-            }
+    const handleCoverImageChange = useCallback(
+        (file: File | undefined, name: 'coverImage') => {
             setFieldValue(file, name);
         },
-        [alert, setFieldValue],
+        [setFieldValue],
+    );
+
+    const handleFileChange = useCallback(
+        (file: File | undefined, name: 'file') => {
+            setFieldValue(file, name);
+        },
+        [setFieldValue],
     );
 
     const handleResult = useCallback((
@@ -371,11 +371,11 @@ function DataAndReportsForm() {
                     </InputSection>
                     <InputSection
                         title="Cover Image"
-                        description="Upload a cover image for the report (max 5MB)"
+                        description="Upload a cover image for the report (max 2MB)"
                     >
                         <RawFileInput
                             name="coverImage"
-                            onChange={handleFileInputChange}
+                            onChange={handleCoverImageChange}
                             accept="image/*"
                             disabled={pending}
                             styleVariant="outline"
@@ -390,6 +390,7 @@ function DataAndReportsForm() {
                                 alt="Cover image preview"
                             />
                         )}
+                        <NonFieldError error={error?.coverImage} />
                     </InputSection>
                     <InputSection
                         title="Content Type"
@@ -427,29 +428,14 @@ function DataAndReportsForm() {
                             description="Upload the report file (max 5MB)"
                             withAsteriskOnTitle
                         >
-                            <InlineLayout
-                                spacing="sm"
-                                contentAlignment="center"
-                                before={(
-                                    <RawFileInput
-                                        name="file"
-                                        onChange={handleFileInputChange}
-                                        disabled={pending}
-                                        styleVariant="outline"
-                                    >
-                                        {isDefined(fileName) ? 'Change file' : 'Upload file'}
-                                    </RawFileInput>
-                                )}
-                            >
-                                <Description>
-                                    {isDefined(fileName) ? fileName : 'Please upload a file'}
-                                </Description>
-                            </InlineLayout>
-                            {isDefined(error?.file) && (
-                                <InputError>
-                                    {getErrorString(error.file)}
-                                </InputError>
-                            )}
+                            <FileInput
+                                name="file"
+                                fileName={fileName}
+                                onChange={handleFileChange}
+                                error={error?.file}
+                                maxSize={MAX_FILE_SIZE}
+                                disabled={pending}
+                            />
                         </InputSection>
                     )}
                     <InputSection

@@ -158,7 +158,7 @@ function DataAndReports() {
         createStringColumn<ReportsListItem, string | number>(
             'category',
             'Category',
-            (item) => thematicAreaMap[item.thematicAreaId],
+            (item) => (isDefined(item.thematicAreaId) ? thematicAreaMap[item.thematicAreaId] : '-'),
         ),
         createDateColumn<ReportsListItem, string | number>(
             'updatedAt',

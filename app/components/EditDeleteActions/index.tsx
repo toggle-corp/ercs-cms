@@ -3,10 +3,13 @@ import {
     DeleteBinLineIcon,
     EditTwoLineIcon,
 } from '@ifrc-go/icons';
-import { TableActions } from '@ifrc-go/ui';
+import {
+    Button,
+    ConfirmButton,
+    TableActions,
+} from '@ifrc-go/ui';
 import { isDefined } from '@togglecorp/fujs';
 
-import DropdownMenuItem from '#components/DropdownMenuItem';
 import useRouting, { type RoutesMap } from '#hooks/useRouting';
 
 export interface Props {
@@ -41,32 +44,25 @@ function EditDeleteActions(props: Props) {
     }, [navigate, to, id, member, dashboard]);
 
     return (
-        <TableActions
-            persistent
-            extraActions={(
-                <>
-                    <DropdownMenuItem
-                        name={undefined}
-                        type="button"
-                        before={<EditTwoLineIcon />}
-                        onClick={handleEditClick}
-                        persist
-                    >
-                        Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                        name={id}
-                        onConfirm={onDelete}
-                        type="confirm-button"
-                        before={<DeleteBinLineIcon />}
-                        confirmMessage={`Are you sure you want to delete ${`"${itemTitle}"` || 'this item'}? This action cannot be undone.`}
-                        persist
-                    >
-                        Delete
-                    </DropdownMenuItem>
-                </>
-            )}
-        />
+        <TableActions>
+            <Button
+                name={undefined}
+                onClick={handleEditClick}
+                title="Edit"
+                styleVariant="action"
+            >
+                <EditTwoLineIcon />
+            </Button>
+            <ConfirmButton
+                name={id}
+                onConfirm={onDelete}
+                confirmMessage={`Are you sure you want to delete ${`"${itemTitle}"` || 'this item'}? This action cannot be undone.`}
+                title="Delete"
+                styleVariant="action"
+            >
+                <DeleteBinLineIcon />
+            </ConfirmButton>
+        </TableActions>
     );
 }
 

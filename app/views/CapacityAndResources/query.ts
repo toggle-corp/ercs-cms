@@ -11,7 +11,6 @@ const CAPACITY_AND_RESOURCES = gql`
                 dashboardsCount
                 isActive
                 order
-                regionId
                 title
                 updatedAt
             }
@@ -41,7 +40,6 @@ const CAPACITY_AND_RESOURCE_DETAIL = gql`
             description
             isActive
             order
-            regionId
             title
         }
     }

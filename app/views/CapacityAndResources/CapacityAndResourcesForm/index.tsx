@@ -28,9 +28,7 @@ import {
 } from '@togglecorp/toggle-form';
 
 import NonFieldError from '#components/NonFieldError';
-import RegionSelectInput from '#components/RegionSelectInput';
 import {
-    AdminAreaLevel,
     type CapacityAndResourceCreateInput,
     type CapacityAndResourceUpdateInput,
     useCapacityAndResourceDetailQuery,
@@ -58,7 +56,6 @@ const capacityAndResourceSchema: FormSchema = {
             requiredValidation: requiredStringCondition,
         },
         description: {},
-        region: {},
         isActive: {},
         order: {
             required: true,
@@ -154,11 +151,7 @@ function CapacityAndResourcesForm() {
         if (isNotDefined(data?.capacityAndResource)) {
             return;
         }
-        const { regionId, ...otherValues } = removeNull(data.capacityAndResource);
-        setValue({
-            ...otherValues,
-            region: regionId ?? undefined,
-        });
+        setValue(removeNull(data.capacityAndResource));
     }, [data, setValue]);
 
     if (detailFetching) {
@@ -224,19 +217,6 @@ function CapacityAndResourcesForm() {
                         value={value.description}
                         onChange={setFieldValue}
                         error={error?.description}
-                        disabled={pending}
-                    />
-                </InputSection>
-                <InputSection
-                    title="Region"
-                    description="Select the region"
-                >
-                    <RegionSelectInput
-                        name="region"
-                        level={AdminAreaLevel.Region}
-                        value={value.region}
-                        onChange={setFieldValue}
-                        error={error?.region}
                         disabled={pending}
                     />
                 </InputSection>
