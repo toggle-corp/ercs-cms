@@ -26,6 +26,7 @@ import {
     useExternalDashboardsQuery,
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
+import useDashboardReorder, { createDragHandleColumn } from '#hooks/useDashboardReorder';
 import useFilterState from '#hooks/useFilterState';
 import useRegionMap from '#hooks/useRegionMap';
 import useRouting from '#hooks/useRouting';
@@ -92,7 +93,7 @@ function OurWorks() {
     });
     const [, deleteExternalDashboard] = useDeleteExternalDashboardMutation();
 
-    const tableData = useMemo(() => (
+    const serverData = useMemo(() => (
         (data?.externalDashboards?.results ?? []).map((dashboard, index) => {
             const no = (page - 1) * limit + index + 1;
             return {
@@ -100,6 +101,8 @@ function OurWorks() {
                 no: String(no),
             };
         }) as unknown as WorksListItem[]), [page, data, limit]);
+
+    const { tableData, rowModifier } = useDashboardReorder(serverData, page, limit);
 
     const onDeleteClick = useCallback(
         (id: string) => {
@@ -119,6 +122,7 @@ function OurWorks() {
     );
 
     const columns = useMemo(() => [
+        createDragHandleColumn<WorksListItem>(),
         createStringColumn<WorksListItem, string | number>(
             'no',
             'No.',
@@ -138,6 +142,11 @@ function OurWorks() {
             'region',
             'Region',
             (item) => (isDefined(item.regionId) ? regionMap[item.regionId] : '-'),
+        ),
+        createStringColumn<WorksListItem, string | number>(
+            'order',
+            'Display Order',
+            (item) => (isDefined(item.order) ? String(item.order) : '-'),
         ),
         createElementColumn<WorksListItem, string | number, { isActive: boolean }>(
             'status',
@@ -201,6 +210,7 @@ function OurWorks() {
                 data={tableData}
                 filtered={filtered}
                 pending={fetching}
+                rowModifier={rowModifier}
             />
         </Container>
     );

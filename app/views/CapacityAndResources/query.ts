@@ -74,8 +74,8 @@ const UPDATE_CAPACITY_AND_RESOURCE = gql`
 `;
 
 const RESOURCE_DASHBOARDS = gql`
-    query ResourceDashboards($pagination: OffsetPaginationInput, $filters: ExternalDashboardFilter) {
-        externalDashboards(pagination: $pagination, filters: $filters) {
+    query ResourceDashboards($pagination: OffsetPaginationInput, $filters: ExternalDashboardFilter, $order: ExternalDashboardOrder) {
+        externalDashboards(pagination: $pagination, filters: $filters, order: $order) {
             results {
                 id
                 title
