@@ -69,6 +69,7 @@ function RootContent() {
         userRole: globalEnumsData?.enums.UserRole,
         teamMemberSex: globalEnumsData?.enums.TeamMemberSex,
         dashboardPage: globalEnumsData?.enums.DashboardPage,
+        reportContentType: globalEnumsData?.enums.ReportContentType,
     }), [globalEnumsData]);
 
     return (

@@ -20,6 +20,10 @@ export const GLOBAL_ENUMS = gql`
                 key
                 label
             }
+            ReportContentType {
+                key
+                label
+            }
         }
     }
 `;
