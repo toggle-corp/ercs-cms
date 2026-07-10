@@ -1,8 +1,14 @@
 import {
     useCallback,
     useEffect,
+    useMemo,
 } from 'react';
-import { useParams } from 'react-router';
+import {
+    createSearchParams,
+    useNavigate,
+    useParams,
+    useSearchParams,
+} from 'react-router';
 import {
     BlockLoading,
     Button,
@@ -28,6 +34,7 @@ import {
 
 import {
     type LinkCreateInput,
+    LinkTypeEnum,
     type LinkUpdateInput,
     useCreateLinkMutation,
     useLinkDetailQuery,
@@ -35,7 +42,7 @@ import {
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
 import useGlobalEnums from '#hooks/useGlobalEnums';
-import useRouting from '#hooks/useRouting';
+import routes from '#root/config/routes';
 import {
     errorMessage,
     keySelector,
@@ -64,12 +71,20 @@ const LinkSchema: FormSchema = {
     }),
 };
 
-const defaultEditFormValue: PartialFormType = {};
+function isAllowedLinkType(value: string | null | undefined): value is LinkTypeEnum {
+    return value === LinkTypeEnum.Internal || value === LinkTypeEnum.External;
+}
 
 function LinkForm() {
     const { id } = useParams();
     const alert = useAlert();
-    const navigate = useRouting();
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+
+    const seedType = searchParams.get('type');
+    const initialValue = useMemo<PartialFormType>(() => ({
+        linkType: isAllowedLinkType(seedType) ? seedType : undefined,
+    }), [seedType]);
 
     const [{ data, fetching: linkDetailFetch }] = useLinkDetailQuery({
         variables: { id: isDefined(id) ? id : '' },
@@ -88,7 +103,7 @@ function LinkForm() {
         validate,
         setError,
         setValue,
-    } = useForm(LinkSchema, { value: defaultEditFormValue });
+    } = useForm(LinkSchema, { value: initialValue });
 
     const {
         linkType: linkTypeOptions,
@@ -96,13 +111,22 @@ function LinkForm() {
 
     const error = getErrorObject(formError);
 
+    const navigateToLinks = useCallback((linkType?: LinkTypeEnum | null) => {
+        navigate({
+            pathname: routes.links.path,
+            search: isDefined(linkType)
+                ? createSearchParams({ tab: linkType }).toString()
+                : undefined,
+        });
+    }, [navigate]);
+
     const handleCreate = useCallback(async (mutationData: PartialFormType) => {
         const createPayload = removeNull(mutationData) as unknown as LinkCreateInput;
         const res = await createLinkMutate({ data: createPayload });
         const result = res.data?.createLink;
 
         if (isDefined(result) && result.ok) {
-            navigate('links');
+            navigateToLinks(mutationData.linkType);
             alert.show('Link created successfully', { variant: 'success' });
         } else if (isDefined(result) && isDefined(result.errors)) {
             setError(transformToFormError(result.errors));
@@ -110,7 +134,7 @@ function LinkForm() {
         } else {
             alert.show(errorMessage, { variant: 'danger' });
         }
-    }, [createLinkMutate, navigate, alert, setError]);
+    }, [createLinkMutate, navigateToLinks, alert, setError]);
 
     const handleUpdate = useCallback(async (mutationData: PartialFormType) => {
         if (isNotDefined(id)) {
@@ -124,7 +148,7 @@ function LinkForm() {
         const result = res.data?.updateLink;
 
         if (isDefined(result) && result.ok) {
-            navigate('links');
+            navigateToLinks(mutationData.linkType);
             alert.show('Link updated successfully', { variant: 'success' });
         } else if (isDefined(result) && isDefined(result.errors)) {
             setError(transformToFormError(result.errors));
@@ -132,7 +156,7 @@ function LinkForm() {
         } else {
             alert.show(errorMessage, { variant: 'danger' });
         }
-    }, [updateLinkMutate, id, navigate, alert, setError]);
+    }, [updateLinkMutate, id, navigateToLinks, alert, setError]);
 
     const handleFormSubmit = useCallback(
         () => createSubmitHandler(
@@ -144,8 +168,8 @@ function LinkForm() {
     );
 
     const handleCancelClick = useCallback(() => {
-        navigate('links');
-    }, [navigate]);
+        navigateToLinks(value.linkType);
+    }, [navigateToLinks, value.linkType]);
 
     useEffect(() => {
         if (isNotDefined(data?.link)) {
