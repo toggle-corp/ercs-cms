@@ -67,7 +67,7 @@ function CapacityAndResourcesList() {
         variables: {
             filters: {
                 isActive: isDefined(filter.isActive) ? filter.isActive === 'true' : undefined,
-                title: filter.search ? { iContains: filter.search } : undefined,
+                search: filter.search || undefined,
             },
             pagination: {
                 limit,

@@ -1,8 +1,11 @@
 import {
     useCallback,
     useMemo,
-    useState,
 } from 'react';
+import {
+    createSearchParams,
+    useNavigate,
+} from 'react-router';
 import { AddFillIcon } from '@ifrc-go/icons';
 import {
     Button,
@@ -34,7 +37,8 @@ import {
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
 import useFilterState from '#hooks/useFilterState';
-import useRouting from '#hooks/useRouting';
+import useUrlSearchState from '#hooks/useUrlSearchState';
+import routes from '#root/config/routes';
 import {
     errorMessage,
     idSelector,
@@ -42,19 +46,22 @@ import {
 
 type LinkListItem = NonNullable<LinkType> & { no: string }
 
-interface LinkFilterType extends Omit<LinkFilter, 'createdAt'> {
+interface LinkFilterType extends Omit<LinkFilter, 'createdAt' | 'linkType'> {
     createdAtGte: string | undefined;
     createdAtLte: string | undefined;
 }
 
 const defaultFilter: LinkFilterType = {
-    linkType: LinkTypeEnum.Internal,
     search: undefined,
     createdAtGte: undefined,
     createdAtLte: undefined,
 };
 function Links() {
-    const [activeTab, setActiveTab] = useState<LinkTypeEnum>(LinkTypeEnum.Internal);
+    const [activeTab, setActiveTab] = useUrlSearchState<LinkTypeEnum>(
+        'tab',
+        (tab) => (tab as LinkTypeEnum) ?? LinkTypeEnum.Internal,
+        (tab) => tab,
+    );
     const {
         filter,
         rawFilter,
@@ -69,7 +76,7 @@ function Links() {
     });
 
     const alert = useAlert();
-    const navigate = useRouting();
+    const navigate = useNavigate();
 
     const queryVariables = useMemo(() => ({
         pagination: {
@@ -77,25 +84,25 @@ function Links() {
             offset,
         },
         filters: {
-            linkType: filter.linkType,
+            linkType: activeTab,
             search: filter.search,
             createdAt: (filter.createdAtGte || filter.createdAtLte) ? {
                 gte: filter.createdAtGte,
                 lte: filter.createdAtLte,
             } : undefined,
         },
-    }), [limit, offset, filter]);
+    }), [limit, offset, filter, activeTab]);
 
     const [{ fetching, data }, reExecuteQuery] = useLinksQuery(
         { variables: queryVariables },
     );
 
     const handleTabChanges = useCallback(
-        (name: LinkTypeEnum.Internal | LinkTypeEnum.External) => {
+        (name: LinkTypeEnum) => {
             setActiveTab(name);
-            setFilterField(name, 'linkType');
+            setPage(1);
         },
-        [setFilterField],
+        [setActiveTab, setPage],
     );
 
     const [, deleteLink] = useDeleteLinkMutation();
@@ -163,8 +170,11 @@ function Links() {
     ], [onDeleteClick]);
 
     const handleCreateClick = useCallback(() => {
-        navigate('createLink');
-    }, [navigate]);
+        navigate({
+            pathname: routes.createLink.path,
+            search: createSearchParams({ type: activeTab }).toString(),
+        });
+    }, [navigate, activeTab]);
 
     return (
         <Tabs
