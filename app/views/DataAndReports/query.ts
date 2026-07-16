@@ -6,14 +6,13 @@ const REPORTS = gql`
         reports(pagination: $pagination, filters: $filters) {
             results {
                 id
-                createdAt
+                publishedAt
                 title
                 owner
                 regionId
                 reportType
                 reportTypeDisplay
                 thematicAreaId
-                updatedAt
                 visibility
                 visibilityDisplay
             }
@@ -31,25 +30,6 @@ const DELETE_REPORT = gql`
                 result {
                     id
                 }
-            }
-        }
-    }
-`;
-
-const REPORT_ENUMS = gql`
-    query ReportEnums {
-        enums {
-            ReportType {
-                key
-                label
-            }
-            ReportVisibility {
-                key
-                label
-            }
-            ReportContentType {
-                key
-                label
             }
         }
     }

@@ -18,6 +18,7 @@ import {
     TextInput,
 } from '@ifrc-go/ui';
 import {
+    encodeDate,
     isDefined,
     isNotDefined,
 } from '@togglecorp/fujs';
@@ -44,11 +45,11 @@ import {
     ReportVisibility,
     useCreateReportMutation,
     useReportDetailQuery,
-    useReportEnumsQuery,
     useThematicAreasQuery,
     useUpdateReportMutation,
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
+import useGlobalEnums from '#hooks/useGlobalEnums';
 import useRouting from '#hooks/useRouting';
 import {
     errorMessage,
@@ -158,7 +159,6 @@ function DataAndReportsForm() {
         pause: isNotDefined(id),
     });
 
-    const [{ data: enumsData }] = useReportEnumsQuery();
     const [{ data: thematicAreasData }] = useThematicAreasQuery();
 
     const [{ fetching: creating }, createReport] = useCreateReportMutation();
@@ -167,9 +167,9 @@ function DataAndReportsForm() {
     const pending = creating || updating || detailFetching;
 
     const {
-        ReportVisibility: visibilityOptions,
-        ReportContentType: contentTypeOptions,
-    } = enumsData?.enums ?? {};
+        reportVisibility: visibilityOptions,
+        reportContentType: contentTypeOptions,
+    } = useGlobalEnums();
 
     const thematicAreaOptions = thematicAreasData?.thematicAreas?.results;
 
@@ -278,6 +278,7 @@ function DataAndReportsForm() {
         const {
             regionId,
             thematicAreaId,
+            publishedAt,
             ...otherValues
         } = removeNull(detailData.report);
 
@@ -285,6 +286,9 @@ function DataAndReportsForm() {
         delete (otherValues as { file?: unknown }).file;
         setValue({
             ...otherValues,
+            publishedAt: isDefined(publishedAt)
+                ? encodeDate(new Date(publishedAt))
+                : undefined,
             region: regionId ?? undefined,
             thematicArea: thematicAreaId,
         });

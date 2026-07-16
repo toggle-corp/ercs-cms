@@ -24,6 +24,10 @@ export const GLOBAL_ENUMS = gql`
                 key
                 label
             }
+            ReportVisibility {
+                key
+                label
+            }
         }
     }
 `;

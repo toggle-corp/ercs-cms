@@ -4,6 +4,7 @@ import type {
     AppEnumCollectionDashboardPage,
     AppEnumCollectionLinkType,
     AppEnumCollectionReportContentType,
+    AppEnumCollectionReportVisibility,
     AppEnumCollectionTeamMemberSex,
     AppEnumCollectionUserRole,
 } from '#generated/types/graphql';
@@ -14,6 +15,7 @@ export interface GlobalEnumsContextInterface {
     teamMemberSex: AppEnumCollectionTeamMemberSex[] | undefined;
     dashboardPage: AppEnumCollectionDashboardPage[] | undefined;
     reportContentType: AppEnumCollectionReportContentType[] | undefined;
+    reportVisibility: AppEnumCollectionReportVisibility[] | undefined;
 }
 
 const GlobalEnumsContext = createContext<GlobalEnumsContextInterface>({
@@ -22,6 +24,7 @@ const GlobalEnumsContext = createContext<GlobalEnumsContextInterface>({
     teamMemberSex: undefined,
     dashboardPage: undefined,
     reportContentType: undefined,
+    reportVisibility: undefined,
 });
 
 export default GlobalEnumsContext;

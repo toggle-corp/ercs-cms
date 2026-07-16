@@ -70,6 +70,7 @@ function RootContent() {
         teamMemberSex: globalEnumsData?.enums.TeamMemberSex,
         dashboardPage: globalEnumsData?.enums.DashboardPage,
         reportContentType: globalEnumsData?.enums.ReportContentType,
+        reportVisibility: globalEnumsData?.enums.ReportVisibility,
     }), [globalEnumsData]);
 
     return (
