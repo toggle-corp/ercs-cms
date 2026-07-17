@@ -136,9 +136,9 @@ function DataAndReports() {
             (item) => item.no,
         ),
         createDateColumn<ReportsListItem, string | number>(
-            'createdAt',
-            'Created At',
-            (item) => item.createdAt,
+            'publishedAt',
+            'Published At',
+            (item) => item.publishedAt,
         ),
         createStringColumn<ReportsListItem, string | number>(
             'title',
@@ -159,11 +159,6 @@ function DataAndReports() {
             'category',
             'Category',
             (item) => (isDefined(item.thematicAreaId) ? thematicAreaMap[item.thematicAreaId] : '-'),
-        ),
-        createDateColumn<ReportsListItem, string | number>(
-            'updatedAt',
-            'Updated At',
-            (item) => item.updatedAt,
         ),
         createStringColumn<ReportsListItem, string | number>(
             'status',
