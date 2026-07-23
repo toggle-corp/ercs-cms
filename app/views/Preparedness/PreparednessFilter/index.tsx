@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+    Button,
     SelectInput,
     TextInput,
 } from '@ifrc-go/ui';
@@ -27,9 +28,16 @@ const pageOptions = [
 export interface Props {
     value: PreparednessFilterType;
     onChange: (...args: EntriesAsList<PreparednessFilterType>) => void;
+    filtered: boolean;
+    onReset: () => void;
 }
 
-function PreparednessFilter({ value, onChange }: Props) {
+function PreparednessFilter({
+    value,
+    onChange,
+    filtered,
+    onReset,
+}: Props) {
     const [regionOptions, setRegionOptions] = useState<
         AdminAreaItem[] | undefined | null
     >([]);
@@ -69,6 +77,14 @@ function PreparednessFilter({ value, onChange }: Props) {
                 value={value.search}
                 onChange={onChange}
             />
+            <Button
+                name={undefined}
+                onClick={onReset}
+                title="Reset"
+                disabled={!filtered}
+            >
+                Reset
+            </Button>
         </>
     );
 }

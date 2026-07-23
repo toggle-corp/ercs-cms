@@ -11,6 +11,7 @@ import {
     ListView,
     NumberInput,
     RadioInput,
+    TextArea,
     TextInput,
 } from '@ifrc-go/ui';
 import {
@@ -212,7 +213,7 @@ function CapacityAndResourcesForm() {
                     title="Description"
                     description="Enter the description about the capacity and resource"
                 >
-                    <TextInput
+                    <TextArea
                         name="description"
                         value={value.description}
                         onChange={setFieldValue}

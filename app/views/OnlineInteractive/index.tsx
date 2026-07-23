@@ -48,6 +48,7 @@ function OnlineInteractive() {
         rawFilter,
         filtered,
         setFilterField,
+        resetFilter,
         page,
         setPage,
         limit,
@@ -148,6 +149,8 @@ function OnlineInteractive() {
                 <OnlineInteractiveFilter
                     value={rawFilter}
                     onChange={setFilterField}
+                    filtered={filtered}
+                    onReset={resetFilter}
                 />
             )}
             headerActions={(

@@ -59,6 +59,7 @@ function DataAndReports() {
         rawFilter,
         filtered,
         setFilterField,
+        resetFilter,
         page,
         setPage,
         limit,
@@ -201,6 +202,8 @@ function DataAndReports() {
                 <DataAndReportsFilters
                     value={rawFilter}
                     onChange={setFilterField}
+                    filtered={filtered}
+                    onReset={resetFilter}
                     thematicAreaOptions={thematicAreaOptions}
                 />
             )}

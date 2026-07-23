@@ -59,6 +59,7 @@ function ResourceDashboards() {
         rawFilter,
         filtered,
         setFilterField,
+        resetFilter,
         page,
         setPage,
         limit,
@@ -188,6 +189,8 @@ function ResourceDashboards() {
                 <ResourceDashboardsFilters
                     value={rawFilter}
                     onChange={setFilterField}
+                    filtered={filtered}
+                    onReset={resetFilter}
                 />
             )}
             headerActions={(

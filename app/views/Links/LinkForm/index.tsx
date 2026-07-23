@@ -16,6 +16,7 @@ import {
     InputSection,
     ListView,
     RadioInput,
+    TextArea,
     TextInput,
 } from '@ifrc-go/ui';
 import {
@@ -230,7 +231,7 @@ function LinkForm() {
                     title="Description"
                     description="Enter the description of the link"
                 >
-                    <TextInput
+                    <TextArea
                         name="description"
                         value={value.description}
                         onChange={setFieldValue}

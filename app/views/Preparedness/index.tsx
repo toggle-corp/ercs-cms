@@ -56,6 +56,7 @@ function PreparednessList() {
         rawFilter,
         filtered,
         setFilterField,
+        resetFilter,
         page,
         setPage,
         limit,
@@ -180,6 +181,8 @@ function PreparednessList() {
                 <PreparednessFilter
                     value={rawFilter}
                     onChange={setFilterField}
+                    filtered={filtered}
+                    onReset={resetFilter}
                 />
             )}
             headerDescription="Track, organize, and update preparedness dashboards"

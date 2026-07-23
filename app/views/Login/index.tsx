@@ -1,7 +1,6 @@
 import {
     use,
     useCallback,
-    useMemo,
 } from 'react';
 import {
     BlockLoading,
@@ -124,11 +123,10 @@ function Login() {
         }
     }, [alert, navigate, setUser, triggerLogin]);
 
-    const handleFormSubmit = useMemo(() => createSubmitHandler(
-        validate,
-        setError,
-        handleMutation,
-    ), [validate, setError, handleMutation]);
+    const handleFormSubmit = useCallback(
+        () => createSubmitHandler(validate, setError, handleMutation)(),
+        [validate, setError, handleMutation],
+    );
 
     if (loginPending) {
         return (

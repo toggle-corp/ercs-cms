@@ -51,6 +51,7 @@ function Home() {
         rawFilter,
         filtered,
         setFilterField,
+        resetFilter,
         page,
         setPage,
         limit,
@@ -249,6 +250,14 @@ function Home() {
                             value={rawFilter.search}
                             onChange={setFilterField}
                         />
+                        <Button
+                            name={undefined}
+                            onClick={resetFilter}
+                            title="Reset"
+                            disabled={!filtered}
+                        >
+                            Reset
+                        </Button>
                     </>
                 )}
                 footerActions={(

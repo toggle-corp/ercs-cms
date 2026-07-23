@@ -56,6 +56,7 @@ function OurWorks() {
         rawFilter,
         filtered,
         setFilterField,
+        resetFilter,
         page,
         setPage,
         limit,
@@ -182,6 +183,8 @@ function OurWorks() {
                 <WorksFilter
                     value={rawFilter}
                     onChange={setFilterField}
+                    filtered={filtered}
+                    onReset={resetFilter}
                 />
             )}
             headerDescription="Track, organize, and update all ongoing work and initiatives"

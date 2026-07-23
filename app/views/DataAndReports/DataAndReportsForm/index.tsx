@@ -1,4 +1,5 @@
 import {
+    use,
     useCallback,
     useEffect,
     useMemo,
@@ -9,11 +10,11 @@ import {
     Button,
     Container,
     DateInput,
-    Image,
     InputSection,
     ListView,
     RadioInput,
     SelectInput,
+    TextArea,
     TextInput,
 } from '@ifrc-go/ui';
 import {
@@ -31,10 +32,12 @@ import {
     useForm,
 } from '@togglecorp/toggle-form';
 
+import CoverImageInput from '#components/CoverImageInput';
 import EmbedPreview from '#components/EmbedPreview';
 import FileInput from '#components/FileInput';
 import NonFieldError from '#components/NonFieldError';
 import RegionSelectInput from '#components/RegionSelectInput';
+import UserContext from '#contexts/UserContext';
 import {
     AdminAreaLevel,
     ReportContentType,
@@ -141,6 +144,8 @@ function DataAndReportsForm() {
 
     const isEditing = isDefined(id);
 
+    const { user } = use(UserContext);
+
     const reportSchema = useMemo(() => getReportSchema(isEditing), [isEditing]);
 
     const {
@@ -186,29 +191,16 @@ function DataAndReportsForm() {
     const coverImageFileName = getFileNameWithoutExtension(
         value.coverImage instanceof File ? value.coverImage : detailData?.report?.coverImage,
     );
-
-    const coverImagePreview = useMemo(() => {
-        if (value.coverImage instanceof File) {
-            return URL.createObjectURL(value.coverImage);
-        }
-        return existingCoverImageUrl;
-    }, [value.coverImage, existingCoverImageUrl]);
-
-    useEffect(() => () => {
-        if (value.coverImage instanceof File && coverImagePreview) {
-            URL.revokeObjectURL(coverImagePreview);
-        }
-    }, [coverImagePreview, value.coverImage]);
-
-    const handleCoverImageChange = useCallback(
-        (file: File | undefined, name: 'coverImage') => {
+    
+    const handleFileChange = useCallback(
+        (file: File | undefined, name: 'file') => {
             setFieldValue(file, name);
         },
         [setFieldValue],
     );
 
-    const handleFileChange = useCallback(
-        (file: File | undefined, name: 'file') => {
+    const handleCoverImageChange = useCallback(
+        (file: File | undefined, name: 'coverImage') => {
             setFieldValue(file, name);
         },
         [setFieldValue],
@@ -276,6 +268,13 @@ function DataAndReportsForm() {
     }, [navigate]);
 
     const error = getErrorObject(formError);
+
+    useEffect(() => {
+        if (isEditing || isNotDefined(user?.fullName)) {
+            return;
+        }
+        setFieldValue(user.fullName, 'owner');
+    }, [isEditing, user?.fullName, setFieldValue]);
 
     useEffect(() => {
         if (isNotDefined(detailData?.report)) {
@@ -359,7 +358,7 @@ function DataAndReportsForm() {
                         title="Description"
                         description="Enter the description of the report"
                     >
-                        <TextInput
+                        <TextArea
                             name="description"
                             value={value.description}
                             onChange={setFieldValue}
@@ -383,22 +382,14 @@ function DataAndReportsForm() {
                         title="Cover Image"
                         description="Upload a cover image for the report (max 2MB)"
                     >
-                        <FileInput
+                        <CoverImageInput
                             name="coverImage"
-                            fileName={coverImageFileName}
+                            value={value.coverImage instanceof File ? value.coverImage : undefined}
+                            existingUrl={detailData?.report?.coverImage?.url}
                             onChange={handleCoverImageChange}
                             error={error?.coverImage}
-                            accept="image/*"
-                            maxSize={MAX_IMAGE_FILE_SIZE}
-                            placeholder="Please upload a cover image"
                             disabled={pending}
                         />
-                        {isDefined(coverImagePreview) && (
-                            <Image
-                                src={coverImagePreview}
-                                alt="Cover image preview"
-                            />
-                        )}
                     </InputSection>
                     <InputSection
                         title="Content Type"

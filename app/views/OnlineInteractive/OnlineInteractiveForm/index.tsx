@@ -25,6 +25,7 @@ import {
     useForm,
 } from '@togglecorp/toggle-form';
 
+import CoverImageInput from '#components/CoverImageInput';
 import FileInput from '#components/FileInput';
 import NonFieldError from '#components/NonFieldError';
 import {
@@ -43,7 +44,7 @@ import {
     transformToFormError,
 } from '#utils/common';
 
-type FormFields = Pick<ReportCreateInput, 'title' | 'file' | 'contentType' | 'reportType'>;
+type FormFields = Pick<ReportCreateInput, 'title' | 'file' | 'coverImage' | 'contentType' | 'reportType'>;
 type PartialFormType = PartialForm<FormFields>;
 type FormSchema = ObjectSchema<PartialFormType>;
 type FormSchemaFields = ReturnType<FormSchema['fields']>;
@@ -64,6 +65,7 @@ function getOnlineInteractiveSchema(isEditing: boolean): FormSchema {
             file: {
                 required: !isEditing,
             },
+            coverImage: {},
         }),
     };
 }
@@ -112,6 +114,13 @@ function OnlineInteractiveForm() {
         [setFieldValue],
     );
 
+    const handleCoverImageChange = useCallback(
+        (file: File | undefined, name: 'coverImage') => {
+            setFieldValue(file, name);
+        },
+        [setFieldValue],
+    );
+
     const handleResult = useCallback((
         result: {
             ok?: boolean | null;
@@ -131,12 +140,13 @@ function OnlineInteractiveForm() {
     }, [navigate, alert, setError]);
 
     const handleCreate = useCallback(async (formValues: PartialFormType) => {
-        const { file, ...rest } = formValues;
+        const { file, coverImage, ...rest } = formValues;
 
         const res = await createOnlineInteractive({
             data: {
                 ...rest,
                 ...(isDefined(file) ? { file } : {}),
+                ...(isDefined(coverImage) ? { coverImage } : {}),
             } as ReportCreateInput,
         });
 
@@ -147,13 +157,14 @@ function OnlineInteractiveForm() {
         if (isNotDefined(id)) {
             return;
         }
-        const { file, title } = formValues;
+        const { file, coverImage, title } = formValues;
 
         const res = await updateOnlineInteractive({
             id,
             data: {
                 title,
                 ...(isDefined(file) ? { file } : {}),
+                ...(isDefined(coverImage) ? { coverImage } : {}),
             } as ReportUpdateInput,
         });
 
@@ -249,6 +260,19 @@ function OnlineInteractiveForm() {
                         fileName={fileName}
                         onChange={handleFileChange}
                         error={error?.file}
+                        disabled={pending}
+                    />
+                </InputSection>
+                <InputSection
+                    title="Cover Image"
+                    description="Upload a cover image for the online interactive"
+                >
+                    <CoverImageInput
+                        name="coverImage"
+                        value={value.coverImage instanceof File ? value.coverImage : undefined}
+                        existingUrl={detailData?.report?.coverImage?.url}
+                        onChange={handleCoverImageChange}
+                        error={error?.coverImage}
                         disabled={pending}
                     />
                 </InputSection>

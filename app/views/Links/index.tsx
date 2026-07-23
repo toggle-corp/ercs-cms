@@ -67,6 +67,7 @@ function Links() {
         rawFilter,
         filtered,
         setFilterField,
+        resetFilter,
         page,
         setPage,
         limit,
@@ -227,6 +228,14 @@ function Links() {
                             value={rawFilter.search}
                             onChange={setFilterField}
                         />
+                        <Button
+                            name={undefined}
+                            onClick={resetFilter}
+                            title="Reset"
+                            disabled={!filtered}
+                        >
+                            Reset
+                        </Button>
                     </>
                 )}
                 footerActions={(

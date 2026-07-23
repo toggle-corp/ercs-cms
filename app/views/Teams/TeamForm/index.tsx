@@ -9,6 +9,7 @@ import {
     Container,
     InputSection,
     ListView,
+    TextArea,
     TextInput,
 } from '@ifrc-go/ui';
 import {
@@ -187,7 +188,7 @@ function TeamForm() {
                     title="Description"
                     description="Enter the description about the team"
                 >
-                    <TextInput
+                    <TextArea
                         name="description"
                         value={value.description}
                         onChange={setFieldValue}

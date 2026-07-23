@@ -51,6 +51,7 @@ function CapacityAndResourcesList() {
         rawFilter,
         filtered,
         setFilterField,
+        resetFilter,
         page,
         setPage,
         limit,
@@ -155,6 +156,8 @@ function CapacityAndResourcesList() {
                 <CapacityAndResourcesFilter
                     value={rawFilter}
                     onChange={setFilterField}
+                    filtered={filtered}
+                    onReset={resetFilter}
                 />
             )}
             headerDescription="Track, organize, and update capacity and resources"
