@@ -138,3 +138,9 @@ const UPDATE_TEAM_MEMBER_MUTATION = gql`
     }
 }
 `;
+
+const TEAM_MEMBERS_TEMPLATE = gql`
+    query TeamMembersTemplate {
+        createTeamMemberTemplate
+    }
+`;

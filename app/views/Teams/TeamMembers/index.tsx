@@ -1,13 +1,21 @@
 import {
     useCallback,
     useMemo,
+    useState,
 } from 'react';
 import { useParams } from 'react-router';
-import { AddFillIcon } from '@ifrc-go/icons';
+import {
+    AddFillIcon,
+    DownloadTwoFillIcon,
+    DrefTwoIcon,
+} from '@ifrc-go/icons';
 import {
     Button,
     Container,
+    ListView,
+    Modal,
     Pager,
+    RawFileInput,
     Table,
 } from '@ifrc-go/ui';
 import {
@@ -17,6 +25,8 @@ import {
 import { isDefined } from '@togglecorp/fujs';
 
 import EditDeleteActions, { type Props as EditDeleteActionsProps } from '#components/EditDeleteActions';
+import FileInput from '#components/FileInput';
+import Link from '#components/Link';
 import {
     AdminAreaLevel,
     type TeamMemberFilter,
@@ -24,6 +34,7 @@ import {
     useDeleteTeamMemberMutation,
     useTeamDetailQuery,
     useTeamMembersQuery,
+    useTeamMembersTemplateQuery,
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
 import useFilterState from '#hooks/useFilterState';
@@ -60,9 +71,11 @@ function TeamMembers() {
 
     const alert = useAlert();
     const navigate = useRouting();
+    const [openImportModal, setOpenImportModal] = useState(false);
 
     const { id } = useParams();
 
+    const [{ data: template, fetching: templateFetch }] = useTeamMembersTemplateQuery();
     const [{ data: teamData, fetching: teamDetailFetch }] = useTeamDetailQuery({
         variables: { id: (id ?? '') }, pause: !id,
     });
@@ -175,6 +188,10 @@ function TeamMembers() {
         }
     }, [navigate, id]);
 
+    const handleTemplateFileChange = useCallback((file: File | undefined) => {
+        console.log('file', file);
+    }, []);
+
     return (
         <Container
             withPadding
@@ -195,14 +212,23 @@ function TeamMembers() {
                 />
             )}
             headerActions={(
-                <Button
-                    name={undefined}
-                    onClick={handleCreateClick}
-                    before={(<AddFillIcon />)}
-                    styleVariant="filled"
-                >
-                    Create
-                </Button>
+                <ListView layout="inline">
+                    <Button
+                        name={undefined}
+                        before={(<DownloadTwoFillIcon />)}
+                        onClick={() => setOpenImportModal(true)}
+                    >
+                        Import
+                    </Button>
+                    <Button
+                        name={undefined}
+                        onClick={handleCreateClick}
+                        before={(<AddFillIcon />)}
+                        styleVariant="filled"
+                    >
+                        Create
+                    </Button>
+                </ListView>
             )}
         >
             <Table
@@ -210,8 +236,39 @@ function TeamMembers() {
                 columns={columns}
                 filtered={filtered}
                 data={tableData}
-                pending={fetching || teamDetailFetch}
+                pending={fetching || teamDetailFetch || templateFetch}
             />
+            {openImportModal && (
+                <Modal
+                    heading={`IMPORT TEAM MEMBERS FOR ${teamData?.team.name}`}
+                    headerDescription="Please upload team member in xlxs format"
+                    onClose={() => setOpenImportModal(false)}
+                >
+                    <RawFileInput
+                        name="file"
+                        accept=".xlsx, .xlsm"
+                        onChange={handleTemplateFileChange}
+                        styleVariant="outline"
+                        colorVariant="primary"
+                        disabled={fetching || teamDetailFetch || templateFetch}
+                        before={<DrefTwoIcon />}
+                    >
+                        Select a file to upload
+                    </RawFileInput>
+                    <span>
+                        <ListView layout="inline" spacing="4xs">
+                            The contents in the xlsx should follow the structure provided in
+                            <Link
+                                href={template?.createTeamMemberTemplate ?? ''}
+                                external
+                                withUnderline
+                            >
+                                this template
+                            </Link>
+                        </ListView>
+                    </span>
+                </Modal>
+            )}
         </Container>
     );
 }
