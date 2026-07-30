@@ -7,15 +7,12 @@ import { useParams } from 'react-router';
 import {
     AddFillIcon,
     DownloadTwoFillIcon,
-    DrefTwoIcon,
 } from '@ifrc-go/icons';
 import {
     Button,
     Container,
     ListView,
-    Modal,
     Pager,
-    RawFileInput,
     Table,
 } from '@ifrc-go/ui';
 import {
@@ -24,9 +21,8 @@ import {
 } from '@ifrc-go/ui/utils';
 import { isDefined } from '@togglecorp/fujs';
 
+import BulkImportModal from '#components/BulkImportModal';
 import EditDeleteActions, { type Props as EditDeleteActionsProps } from '#components/EditDeleteActions';
-import FileInput from '#components/FileInput';
-import Link from '#components/Link';
 import {
     AdminAreaLevel,
     type TeamMemberFilter,
@@ -34,7 +30,6 @@ import {
     useDeleteTeamMemberMutation,
     useTeamDetailQuery,
     useTeamMembersQuery,
-    useTeamMembersTemplateQuery,
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
 import useFilterState from '#hooks/useFilterState';
@@ -75,7 +70,6 @@ function TeamMembers() {
 
     const { id } = useParams();
 
-    const [{ data: template, fetching: templateFetch }] = useTeamMembersTemplateQuery();
     const [{ data: teamData, fetching: teamDetailFetch }] = useTeamDetailQuery({
         variables: { id: (id ?? '') }, pause: !id,
     });
@@ -188,10 +182,6 @@ function TeamMembers() {
         }
     }, [navigate, id]);
 
-    const handleTemplateFileChange = useCallback((file: File | undefined) => {
-        console.log('file', file);
-    }, []);
-
     return (
         <Container
             withPadding
@@ -236,38 +226,15 @@ function TeamMembers() {
                 columns={columns}
                 filtered={filtered}
                 data={tableData}
-                pending={fetching || teamDetailFetch || templateFetch}
+                pending={fetching || teamDetailFetch}
             />
-            {openImportModal && (
-                <Modal
-                    heading={`IMPORT TEAM MEMBERS FOR ${teamData?.team.name}`}
-                    headerDescription="Please upload team member in xlxs format"
+            {openImportModal && isDefined(id) && (
+                <BulkImportModal
+                    teamId={id}
+                    teamName={teamData?.team.name}
                     onClose={() => setOpenImportModal(false)}
-                >
-                    <RawFileInput
-                        name="file"
-                        accept=".xlsx, .xlsm"
-                        onChange={handleTemplateFileChange}
-                        styleVariant="outline"
-                        colorVariant="primary"
-                        disabled={fetching || teamDetailFetch || templateFetch}
-                        before={<DrefTwoIcon />}
-                    >
-                        Select a file to upload
-                    </RawFileInput>
-                    <span>
-                        <ListView layout="inline" spacing="4xs">
-                            The contents in the xlsx should follow the structure provided in
-                            <Link
-                                href={template?.createTeamMemberTemplate ?? ''}
-                                external
-                                withUnderline
-                            >
-                                this template
-                            </Link>
-                        </ListView>
-                    </span>
-                </Modal>
+                    onImportSuccess={() => reExecuteQuery({ requestPolicy: 'network-only' })}
+                />
             )}
         </Container>
     );
