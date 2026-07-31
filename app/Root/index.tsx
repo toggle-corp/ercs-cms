@@ -66,6 +66,7 @@ function RootContent() {
 
     const globalEnumsContext: GlobalEnumsContextInterface = useMemo(() => ({
         linkType: globalEnumsData?.enums.LinkType,
+        reportType: globalEnumsData?.enums.ReportType,
         userRole: globalEnumsData?.enums.UserRole,
         teamMemberSex: globalEnumsData?.enums.TeamMemberSex,
         dashboardPage: globalEnumsData?.enums.DashboardPage,

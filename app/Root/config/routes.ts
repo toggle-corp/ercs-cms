@@ -178,6 +178,16 @@ const documents: RouteConfig = {
     load: () => import('#views/Documents'),
     visibility: 'is-authenticated',
 };
+const createDocument: RouteConfig = {
+    path: '/documents/new',
+    load: () => import('#views/Documents/DocumentsForm'),
+    visibility: 'is-authenticated',
+};
+const editDocument: RouteConfig = {
+    path: '/documents/:id/edit',
+    load: () => import('#views/Documents/DocumentsForm'),
+    visibility: 'is-authenticated',
+};
 const onlineInteractive: RouteConfig = {
     index: true,
     path: '/online-interactive',
@@ -250,6 +260,8 @@ const routes = {
     createResourceDashboard,
     editResourceDashboard,
     documents,
+    createDocument,
+    editDocument,
     onlineInteractive,
     createOnlineInteractive,
     editOnlineInteractive,

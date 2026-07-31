@@ -4,6 +4,7 @@ import type {
     AppEnumCollectionDashboardPage,
     AppEnumCollectionLinkType,
     AppEnumCollectionReportContentType,
+    AppEnumCollectionReportType,
     AppEnumCollectionReportVisibility,
     AppEnumCollectionTeamMemberSex,
     AppEnumCollectionUserRole,
@@ -11,6 +12,7 @@ import type {
 
 export interface GlobalEnumsContextInterface {
     linkType: AppEnumCollectionLinkType[] | undefined;
+    reportType: AppEnumCollectionReportType[] | undefined;
     userRole: AppEnumCollectionUserRole[] | undefined;
     teamMemberSex: AppEnumCollectionTeamMemberSex[] | undefined;
     dashboardPage: AppEnumCollectionDashboardPage[] | undefined;
@@ -20,6 +22,7 @@ export interface GlobalEnumsContextInterface {
 
 const GlobalEnumsContext = createContext<GlobalEnumsContextInterface>({
     linkType: undefined,
+    reportType: undefined,
     userRole: undefined,
     teamMemberSex: undefined,
     dashboardPage: undefined,

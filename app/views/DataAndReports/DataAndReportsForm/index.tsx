@@ -13,7 +13,6 @@ import {
     InputSection,
     ListView,
     RadioInput,
-    RawFileInput,
     SelectInput,
     TextInput,
 } from '@ifrc-go/ui';
@@ -66,7 +65,8 @@ type PartialFormType = PartialForm<ReportCreateInput>;
 type FormSchema = ObjectSchema<PartialFormType>;
 type FormSchemaFields = ReturnType<FormSchema['fields']>;
 
-// NOTE: file/iframeUrl are required only on create.
+const MAX_IMAGE_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+
 function getReportSchema(isEditing: boolean): FormSchema {
     return {
         fields: (value): FormSchemaFields => {
@@ -124,8 +124,6 @@ const defaultFormValue: PartialFormType = {
     visibility: ReportVisibility.Public,
 };
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-
 function getFileFields(
     file: File | null | undefined,
     coverImage: File | null | undefined,
@@ -177,9 +175,17 @@ function DataAndReportsForm() {
 
     const existingCoverImageUrl = detailData?.report?.coverImage?.url;
 
-    const fileName = value.file instanceof File
-        ? value.file.name
-        : detailData?.report?.file?.name?.split('/').pop();
+    const getFileNameWithoutExtension = (
+        file?: File | { name?: string } | null,
+    ) => file?.name?.split('/').pop()?.replace(/\.[^/.]+$/, '');
+
+    const fileName = getFileNameWithoutExtension(
+        value.file instanceof File ? value.file : detailData?.report?.file,
+    );
+
+    const coverImageFileName = getFileNameWithoutExtension(
+        value.coverImage instanceof File ? value.coverImage : detailData?.report?.coverImage,
+    );
 
     const coverImagePreview = useMemo(() => {
         if (value.coverImage instanceof File) {
@@ -377,24 +383,22 @@ function DataAndReportsForm() {
                         title="Cover Image"
                         description="Upload a cover image for the report (max 2MB)"
                     >
-                        <RawFileInput
+                        <FileInput
                             name="coverImage"
+                            fileName={coverImageFileName}
                             onChange={handleCoverImageChange}
+                            error={error?.coverImage}
                             accept="image/*"
+                            maxSize={MAX_IMAGE_FILE_SIZE}
+                            placeholder="Please upload a cover image"
                             disabled={pending}
-                            styleVariant="outline"
-                        >
-                            {isDefined(value.coverImage) || isDefined(coverImagePreview)
-                                ? 'Change cover image'
-                                : 'Upload cover image'}
-                        </RawFileInput>
+                        />
                         {isDefined(coverImagePreview) && (
                             <Image
                                 src={coverImagePreview}
                                 alt="Cover image preview"
                             />
                         )}
-                        <NonFieldError error={error?.coverImage} />
                     </InputSection>
                     <InputSection
                         title="Content Type"
@@ -437,7 +441,6 @@ function DataAndReportsForm() {
                                 fileName={fileName}
                                 onChange={handleFileChange}
                                 error={error?.file}
-                                maxSize={MAX_FILE_SIZE}
                                 disabled={pending}
                             />
                         </InputSection>

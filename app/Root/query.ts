@@ -8,6 +8,10 @@ export const GLOBAL_ENUMS = gql`
                 key
                 label
             }
+            ReportType {
+                key
+                label
+            }
             UserRole {
                 key
                 label
