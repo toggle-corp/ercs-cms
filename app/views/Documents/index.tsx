@@ -48,13 +48,14 @@ import DocumentsFilters from './DocumentsFilters';
 
 type ReportsListItem = NonNullable<NonNullable<DocumentsQuery['reports']>['results'][number]> & { no: number };
 
-export type DocumentFilterType = Pick<ReportFilter, 'search' | 'regions'> & {
+export type DocumentFilterType = Pick<ReportFilter, 'regions'> & {
+    title: string | undefined;
     createdAtGte: string | undefined;
     createdAtLte: string | undefined;
 };
 
 const defaultFilter: DocumentFilterType = {
-    search: undefined,
+    title: undefined,
     createdAtGte: undefined,
     createdAtLte: undefined,
 };
@@ -71,6 +72,7 @@ function Documents() {
         filter,
         filtered,
         setFilterField,
+        resetFilter,
         page,
         setPage,
         limit,
@@ -95,7 +97,8 @@ function Documents() {
         },
         filters: {
             reportType: activeTab,
-            search: filter.search || undefined,
+            title: filter.title ? { iContains: filter.title } : undefined,
+            // NOTE: createdAt filter is not in ReportFilter yet; backend is adding it
             createdAt: (filter.createdAtGte || filter.createdAtLte) ? {
                 gte: filter.createdAtGte,
                 lte: filter.createdAtLte,
@@ -204,6 +207,8 @@ function Documents() {
                     <DocumentsFilters
                         value={rawFilter}
                         onChange={setFilterField}
+                        onReset={resetFilter}
+                        filtered={filtered}
                     />
 
                 )}

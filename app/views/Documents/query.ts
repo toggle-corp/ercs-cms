@@ -41,6 +41,10 @@ const DOCUMENT_DETAIL = gql`
                 url
                 name
             }
+            coverImage {
+                url
+                name
+            }
         }
     }
 `;

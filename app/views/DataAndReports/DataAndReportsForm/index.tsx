@@ -68,8 +68,6 @@ type PartialFormType = PartialForm<ReportCreateInput>;
 type FormSchema = ObjectSchema<PartialFormType>;
 type FormSchemaFields = ReturnType<FormSchema['fields']>;
 
-const MAX_IMAGE_FILE_SIZE = 2 * 1024 * 1024; // 2MB
-
 function getReportSchema(isEditing: boolean): FormSchema {
     return {
         fields: (value): FormSchemaFields => {
@@ -178,8 +176,6 @@ function DataAndReportsForm() {
 
     const isIframe = value.contentType === ReportContentType.Iframe;
 
-    const existingCoverImageUrl = detailData?.report?.coverImage?.url;
-
     const getFileNameWithoutExtension = (
         file?: File | { name?: string } | null,
     ) => file?.name?.split('/').pop()?.replace(/\.[^/.]+$/, '');
@@ -188,10 +184,6 @@ function DataAndReportsForm() {
         value.file instanceof File ? value.file : detailData?.report?.file,
     );
 
-    const coverImageFileName = getFileNameWithoutExtension(
-        value.coverImage instanceof File ? value.coverImage : detailData?.report?.coverImage,
-    );
-    
     const handleFileChange = useCallback(
         (file: File | undefined, name: 'file') => {
             setFieldValue(file, name);

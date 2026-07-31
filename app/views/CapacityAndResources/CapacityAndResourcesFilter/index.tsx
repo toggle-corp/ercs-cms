@@ -38,9 +38,9 @@ function CapacityAndResourcesFilter({
                 labelSelector={labelSelector}
             />
             <TextInput
-                name="search"
+                name="title"
                 placeholder="Search by title"
-                value={value.search}
+                value={value.title}
                 onChange={onChange}
             />
             <Button

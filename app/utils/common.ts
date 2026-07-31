@@ -1,4 +1,7 @@
-import { isFalsyString } from '@togglecorp/fujs';
+import {
+    isFalsyString,
+    isNotDefined,
+} from '@togglecorp/fujs';
 import { nonFieldError } from '@togglecorp/toggle-form';
 
 import type { AdminAreaLevel } from '#generated/types/graphql';
@@ -46,6 +49,7 @@ export const statusFilterOptions = [
 
 export const errorMessage = 'Something went wrong. Please try again. ';
 
+<<<<<<< HEAD
 export function getReadableFileSize(bytes: number | null | undefined): string {
     if (!bytes || bytes <= 0) {
         return '0 B';
@@ -60,6 +64,46 @@ export function getReadableFileSize(bytes: number | null | undefined): string {
     return `${exponent === 0 ? value : value.toFixed(1)} ${units[exponent]}`;
 }
 
+||||||| parent of e93c657 (feat(documents): add cover image in documents)
+=======
+// NOTE: keep in sync with backend/utils/validators.py and
+// backend/apps/reports/serializers.py
+export const ACCEPTED_REPORT_FILE_TYPES = '.pdf,.doc,.docx,.png,.jpg,.jpeg';
+export const ACCEPTED_IMAGE_TYPES = 'image/*';
+export const MAX_REPORT_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+export const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
+
+function isFileAccepted(file: File, accept: string | undefined) {
+    if (isNotDefined(accept)) {
+        return true;
+    }
+    const fileType = file.type.toLowerCase();
+    return accept.split(',').some((token) => {
+        const type = token.trim().toLowerCase();
+        if (type.startsWith('.')) {
+            return file.name.toLowerCase().endsWith(type);
+        }
+        if (type.endsWith('/*')) {
+            return fileType.startsWith(type.slice(0, -1));
+        }
+        return fileType === type;
+    });
+}
+
+export function validateFile(file: File, maxSize: number, accept: string | undefined) {
+    if (file.size === 0) {
+        return 'File is empty';
+    }
+    if (file.size > maxSize) {
+        return `File must be less than ${Math.round(maxSize / (1024 * 1024))}MB`;
+    }
+    if (!isFileAccepted(file, accept)) {
+        return 'File type is not supported';
+    }
+    return undefined;
+}
+
+>>>>>>> e93c657 (feat(documents): add cover image in documents)
 interface ServerError {
     field: string;
     messages: string | null;

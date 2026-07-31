@@ -36,13 +36,14 @@ import CapacityAndResourcesFilter from './CapacityAndResourcesFilter';
 
 type ResourcesListItem = NonNullable<NonNullable<CapacityAndResourcesQuery['capacityAndResources']>['results'][number]> & { no: string };
 
-export interface ResourcesFilterType extends Omit<CapacityAndResourceFilter, 'isActive'> {
+export interface ResourcesFilterType extends Omit<CapacityAndResourceFilter, 'isActive' | 'title'> {
     isActive: string | undefined;
+    title: string | undefined;
 }
 
 const defaultFilter: ResourcesFilterType = {
     isActive: undefined,
-    search: undefined,
+    title: undefined,
 };
 
 function CapacityAndResourcesList() {
@@ -68,7 +69,7 @@ function CapacityAndResourcesList() {
         variables: {
             filters: {
                 isActive: isDefined(filter.isActive) ? filter.isActive === 'true' : undefined,
-                search: filter.search || undefined,
+                title: filter.title ? { iContains: filter.title } : undefined,
             },
             pagination: {
                 limit,

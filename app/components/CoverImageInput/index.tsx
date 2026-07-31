@@ -1,15 +1,23 @@
 import {
+    useCallback,
     useEffect,
     useMemo,
+    useState,
 } from 'react';
 import {
     Image,
+    ListView,
     RawFileInput,
 } from '@ifrc-go/ui';
 import { isDefined } from '@togglecorp/fujs';
 import { type Error } from '@togglecorp/toggle-form';
 
 import NonFieldError from '#components/NonFieldError';
+import {
+    ACCEPTED_IMAGE_TYPES,
+    MAX_IMAGE_SIZE,
+    validateFile,
+} from '#utils/common';
 
 interface Props<N, T> {
     name: N;
@@ -19,6 +27,7 @@ interface Props<N, T> {
     error?: Error<T>;
     accept?: string;
     disabled?: boolean;
+    maxSize?: number;
 }
 
 function CoverImageInput<N, T>(props: Props<N, T>) {
@@ -28,9 +37,12 @@ function CoverImageInput<N, T>(props: Props<N, T>) {
         existingUrl,
         onChange,
         error,
-        accept = 'image/*',
+        accept = ACCEPTED_IMAGE_TYPES,
         disabled,
+        maxSize = MAX_IMAGE_SIZE,
     } = props;
+
+    const [validationError, setValidationError] = useState<string>();
 
     const preview = useMemo(() => {
         if (value instanceof File) {
@@ -45,18 +57,27 @@ function CoverImageInput<N, T>(props: Props<N, T>) {
         }
     }, [preview, value]);
 
+    const handleChange = useCallback(
+        (file: File | undefined, inputName: N) => {
+            const message = isDefined(file)
+                ? validateFile(file, maxSize, accept)
+                : undefined;
+            setValidationError(message);
+            onChange(isDefined(message) ? undefined : file, inputName);
+        },
+        [onChange, maxSize, accept],
+    );
+
     return (
-        <>
+        <ListView layout="block">
             <RawFileInput
                 name={name}
-                onChange={onChange}
+                onChange={handleChange}
                 accept={accept}
                 disabled={disabled}
                 styleVariant="outline"
             >
-                {isDefined(value) || isDefined(preview)
-                    ? 'Change cover image'
-                    : 'Upload cover image'}
+                {isDefined(preview) ? 'Change cover image' : 'Upload cover image'}
             </RawFileInput>
             {isDefined(preview) && (
                 <Image
@@ -66,8 +87,8 @@ function CoverImageInput<N, T>(props: Props<N, T>) {
                     withContainedFit
                 />
             )}
-            <NonFieldError error={error} />
-        </>
+            <NonFieldError error={validationError ?? error} />
+        </ListView>
     );
 }
 

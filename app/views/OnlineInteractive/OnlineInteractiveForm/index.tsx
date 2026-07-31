@@ -265,7 +265,7 @@ function OnlineInteractiveForm() {
                 </InputSection>
                 <InputSection
                     title="Cover Image"
-                    description="Upload a cover image for the online interactive"
+                    description="Upload a cover image for the online interactive (max 2MB)"
                 >
                     <CoverImageInput
                         name="coverImage"

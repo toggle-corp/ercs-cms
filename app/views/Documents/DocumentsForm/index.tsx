@@ -32,6 +32,7 @@ import {
     useForm,
 } from '@togglecorp/toggle-form';
 
+import CoverImageInput from '#components/CoverImageInput';
 import FileInput from '#components/FileInput';
 import NonFieldError from '#components/NonFieldError';
 import {
@@ -86,6 +87,7 @@ function getDocumentSchema(isEditing: boolean): FormSchema {
             file: {
                 required: !isEditing,
             },
+            coverImage: {},
         }),
     };
 }
@@ -94,11 +96,14 @@ const defaultFormValue: PartialFormType = {
     contentType: ReportContentType.File,
 };
 
-function getFileFields(file: File | null | undefined) {
-    if (isDefined(file)) {
-        return { file };
-    }
-    return {};
+function getFileFields(
+    file: File | null | undefined,
+    coverImage: File | null | undefined,
+) {
+    return {
+        ...(isDefined(file) ? { file } : {}),
+        ...(isDefined(coverImage) ? { coverImage } : {}),
+    };
 }
 
 function DocumentsForm() {
@@ -168,12 +173,12 @@ function DocumentsForm() {
     }, [navigateToDocuments, alert, setError]);
 
     const handleCreate = useCallback(async (formValues: PartialFormType) => {
-        const { file, ...otherValues } = formValues;
+        const { file, coverImage, ...otherValues } = formValues;
 
         const response = await createDocumentMutate({
             data: {
                 ...removeNull(otherValues),
-                ...getFileFields(file),
+                ...getFileFields(file, coverImage),
             } as ReportCreateInput,
         });
 
@@ -184,13 +189,13 @@ function DocumentsForm() {
         if (isNotDefined(id)) {
             return;
         }
-        const { file, ...otherValues } = formValues;
+        const { file, coverImage, ...otherValues } = formValues;
 
         const response = await updateDocumentMutate({
             id,
             data: {
                 ...omitKeys(removeNull(otherValues), ['contentType']),
-                ...getFileFields(file),
+                ...getFileFields(file, coverImage),
             } as ReportUpdateInput,
         });
 
@@ -204,12 +209,19 @@ function DocumentsForm() {
         [setFieldValue],
     );
 
+    const handleCoverImageChange = useCallback(
+        (file: File | undefined, name: 'coverImage') => {
+            setFieldValue(file, name);
+        },
+        [setFieldValue],
+    );
+
     const handleFormSubmit = useCallback(
         () => createSubmitHandler(
             validate,
             setError,
             isDefined(id) ? handleUpdate : handleCreate,
-        ),
+        )(),
         [validate, setError, id, handleUpdate, handleCreate],
     );
 
@@ -223,7 +235,7 @@ function DocumentsForm() {
 
     useEffect(() => {
         if (!documentDetailFetching && isDefined(documentData)) {
-            setValue(omitKeys(removeNull(documentData), ['file']));
+            setValue(omitKeys(removeNull(documentData), ['file', 'coverImage']));
         }
     }, [documentDetailFetching, documentData, setValue]);
 
@@ -293,7 +305,7 @@ function DocumentsForm() {
                 </InputSection>
                 <InputSection
                     title="File Upload"
-                    description="Upload the document file"
+                    description="Upload the document file (max 5MB)"
                     withAsteriskOnTitle
                 >
                     <FileInput
@@ -301,6 +313,19 @@ function DocumentsForm() {
                         fileName={fileName}
                         onChange={handleFileChange}
                         error={error?.file}
+                        disabled={pending}
+                    />
+                </InputSection>
+                <InputSection
+                    title="Cover Image"
+                    description="Upload a cover image for the document (max 2MB)"
+                >
+                    <CoverImageInput
+                        name="coverImage"
+                        value={value.coverImage instanceof File ? value.coverImage : undefined}
+                        existingUrl={documentData?.coverImage?.url}
+                        onChange={handleCoverImageChange}
+                        error={error?.coverImage}
                         disabled={pending}
                     />
                 </InputSection>

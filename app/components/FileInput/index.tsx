@@ -8,46 +8,15 @@ import {
     ListView,
     RawFileInput,
 } from '@ifrc-go/ui';
-import {
-    isDefined,
-    isNotDefined,
-} from '@togglecorp/fujs';
+import { isDefined } from '@togglecorp/fujs';
 import { type Error } from '@togglecorp/toggle-form';
 
 import NonFieldError from '#components/NonFieldError';
-
-const ACCEPTED_REPORT_FILE_TYPES = '.pdf,.doc,.docx,.png,.jpg,.jpeg';
-const MAX_REPORT_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-
-function isFileAccepted(file: File, accept: string | undefined) {
-    if (isNotDefined(accept)) {
-        return true;
-    }
-    const fileType = file.type.toLowerCase();
-    return accept.split(',').some((token) => {
-        const type = token.trim().toLowerCase();
-        if (type.startsWith('.')) {
-            return file.name.toLowerCase().endsWith(type);
-        }
-        if (type.endsWith('/*')) {
-            return fileType.startsWith(type.slice(0, -1));
-        }
-        return fileType === type;
-    });
-}
-
-function validateFile(file: File, maxSize: number, accept: string | undefined) {
-    if (file.size === 0) {
-        return 'File is empty';
-    }
-    if (file.size > maxSize) {
-        return `File must be less than ${Math.round(maxSize / (1024 * 1024))}MB`;
-    }
-    if (!isFileAccepted(file, accept)) {
-        return 'File type is not supported';
-    }
-    return undefined;
-}
+import {
+    ACCEPTED_REPORT_FILE_TYPES,
+    MAX_REPORT_FILE_SIZE,
+    validateFile,
+} from '#utils/common';
 
 interface Props<N, T> {
     name: N;

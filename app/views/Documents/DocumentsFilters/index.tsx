@@ -1,4 +1,5 @@
 import {
+    Button,
     DateInput,
     TextInput,
 } from '@ifrc-go/ui';
@@ -9,9 +10,13 @@ import type { DocumentFilterType } from '..';
 export interface Props {
     value: DocumentFilterType;
     onChange: (...args: EntriesAsList<DocumentFilterType>) => void;
+    onReset: () => void;
+    filtered: boolean;
 }
 
-function DocumentsFilters({ value, onChange }: Props) {
+function DocumentsFilters({
+    value, onChange, onReset, filtered,
+}: Props) {
     return (
         <>
             <DateInput
@@ -27,11 +32,19 @@ function DocumentsFilters({ value, onChange }: Props) {
                 onChange={onChange}
             />
             <TextInput
-                name="search"
+                name="title"
                 placeholder="Search by title"
-                value={value.search}
+                value={value.title}
                 onChange={onChange}
             />
+            <Button
+                name={undefined}
+                onClick={onReset}
+                title="Reset"
+                disabled={!filtered}
+            >
+                Reset
+            </Button>
         </>
     );
 }
