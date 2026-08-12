@@ -25,6 +25,7 @@ import {
 import {
     _cs,
     isDefined,
+    isNotDefined,
 } from '@togglecorp/fujs';
 import {
     createSubmitHandler,
@@ -36,6 +37,7 @@ import {
     useForm,
 } from '@togglecorp/toggle-form';
 
+import NonFieldError from '#components/NonFieldError';
 import {
     type GalleryAlbumCreateInput,
     type GalleryAlbumUpdateInput,
@@ -48,7 +50,13 @@ import {
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
 import useRouting from '#hooks/useRouting';
-import { errorMessage } from '#utils/common';
+import {
+    ACCEPTED_IMAGE_TYPES,
+    errorMessage,
+    MAX_IMAGE_SIZE,
+    transformToFormError,
+    validateFile,
+} from '#utils/common';
 
 import styles from './styles.module.css';
 
@@ -70,8 +78,6 @@ const defaultEditFormValue: PartialFormType = {};
 // Maximum number of images to load for an album in the edit view.
 const MAX_IMAGES = 100;
 
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
-
 function getDisplayName(name: string) {
     return name.split('/').pop()?.replace(/\.[^.]+$/, '') ?? name;
 }
@@ -89,6 +95,7 @@ function GalleryForm() {
     const alert = useAlert();
 
     const [newFiles, setNewFiles] = useState<File[]>([]);
+    const [fileErrors, setFileErrors] = useState<string[]>([]);
     const [removedImageIds, setRemovedImageIds] = useState<string[]>([]);
     const [submitting, setSubmitting] = useState(false);
 
@@ -147,8 +154,21 @@ function GalleryForm() {
     }, [newFilePreviews]);
 
     const handleFilesSelect = useCallback((files: File[] | undefined) => {
-        if (files && files.length > 0) {
-            setNewFiles((prev) => [...prev, ...files]);
+        if (isNotDefined(files) || files.length === 0) {
+            return;
+        }
+        const rejected: string[] = [];
+        const accepted = files.filter((file) => {
+            const message = validateFile(file, MAX_IMAGE_SIZE, ACCEPTED_IMAGE_TYPES);
+            if (isDefined(message)) {
+                rejected.push(`${file.name}: ${message}`);
+                return false;
+            }
+            return true;
+        });
+        setFileErrors(rejected);
+        if (accepted.length > 0) {
+            setNewFiles((prev) => [...prev, ...accepted]);
         }
     }, []);
 
@@ -213,10 +233,10 @@ function GalleryForm() {
             });
             const result = res.data?.createGalleryAlbum;
             if (!result?.ok || !result.result?.id) {
-                if (result?.errors) {
-                    setError(result.errors);
+                if (isDefined(result) && isDefined(result.errors)) {
+                    setError(transformToFormError(result.errors));
                 }
-                alert.show(result?.errors ?? errorMessage, { variant: 'danger' });
+                alert.show(errorMessage, { variant: 'danger' });
                 return;
             }
 
@@ -255,10 +275,10 @@ function GalleryForm() {
             });
             const result = res.data?.updateGalleryAlbum;
             if (!result?.ok) {
-                if (result?.errors) {
-                    setError(result.errors);
+                if (isDefined(result) && isDefined(result.errors)) {
+                    setError(transformToFormError(result.errors));
                 }
-                alert.show(result?.errors ?? errorMessage, { variant: 'danger' });
+                alert.show(errorMessage, { variant: 'danger' });
                 return;
             }
 
@@ -300,7 +320,6 @@ function GalleryForm() {
     }, [navigate]);
 
     const error = getErrorObject(formError);
-    const hasOversizedFile = newFiles.some((file) => file.size > MAX_FILE_SIZE);
 
     if (albumDetailFetch || imagesFetch) {
         return (
@@ -334,7 +353,6 @@ function GalleryForm() {
                             submitting
                             || createGalleryPending
                             || updateGalleryPending
-                            || hasOversizedFile
                         }
                     >
                         Save
@@ -343,6 +361,10 @@ function GalleryForm() {
             )}
         >
             <ListView layout="block">
+                <NonFieldError
+                    error={formError}
+                    withFallbackError
+                />
                 <InputSection
                     title="Event Name"
                     description="Enter the name of the event"
@@ -353,6 +375,7 @@ function GalleryForm() {
                         value={value.title}
                         onChange={setFieldValue}
                         error={error?.title}
+                        disabled={submitting}
                     />
                 </InputSection>
                 <InputSection
@@ -418,17 +441,12 @@ function GalleryForm() {
                                 >
                                     <CloseLineIcon />
                                 </IconButton>
-                                {file.size > MAX_FILE_SIZE && (
-                                    <InputError>
-                                        File size exceeds 2MB limit.
-                                    </InputError>
-                                )}
                             </div>
                         ))}
                         <RawFileInput
                             name={undefined}
                             multiple
-                            accept="image/*"
+                            accept={ACCEPTED_IMAGE_TYPES}
                             disabled={submitting}
                             onChange={handleFilesSelect}
                             className={_cs(
@@ -445,12 +463,11 @@ function GalleryForm() {
                             </Heading>
                         </RawFileInput>
                     </ListView>
-                    {hasOversizedFile && (
-                        <InputError>
-                            Please remove or replace the images that exceed the 2MB
-                            limit before saving.
+                    {fileErrors.map((fileError) => (
+                        <InputError key={fileError}>
+                            {fileError}
                         </InputError>
-                    )}
+                    ))}
                 </InputSection>
             </ListView>
         </Container>
