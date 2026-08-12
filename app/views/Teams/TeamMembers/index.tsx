@@ -1,12 +1,17 @@
 import {
     useCallback,
     useMemo,
+    useState,
 } from 'react';
 import { useParams } from 'react-router';
-import { AddFillIcon } from '@ifrc-go/icons';
+import {
+    AddFillIcon,
+    DownloadTwoFillIcon,
+} from '@ifrc-go/icons';
 import {
     Button,
     Container,
+    ListView,
     Pager,
     Table,
 } from '@ifrc-go/ui';
@@ -16,6 +21,7 @@ import {
 } from '@ifrc-go/ui/utils';
 import { isDefined } from '@togglecorp/fujs';
 
+import BulkImportModal from '#components/BulkImportModal';
 import EditDeleteActions, { type Props as EditDeleteActionsProps } from '#components/EditDeleteActions';
 import {
     AdminAreaLevel,
@@ -60,6 +66,7 @@ function TeamMembers() {
 
     const alert = useAlert();
     const navigate = useRouting();
+    const [openImportModal, setOpenImportModal] = useState(false);
 
     const { id } = useParams();
 
@@ -195,14 +202,23 @@ function TeamMembers() {
                 />
             )}
             headerActions={(
-                <Button
-                    name={undefined}
-                    onClick={handleCreateClick}
-                    before={(<AddFillIcon />)}
-                    styleVariant="filled"
-                >
-                    Create
-                </Button>
+                <ListView layout="inline">
+                    <Button
+                        name={undefined}
+                        before={(<DownloadTwoFillIcon />)}
+                        onClick={() => setOpenImportModal(true)}
+                    >
+                        Import
+                    </Button>
+                    <Button
+                        name={undefined}
+                        onClick={handleCreateClick}
+                        before={(<AddFillIcon />)}
+                        styleVariant="filled"
+                    >
+                        Create
+                    </Button>
+                </ListView>
             )}
         >
             <Table
@@ -212,6 +228,14 @@ function TeamMembers() {
                 data={tableData}
                 pending={fetching || teamDetailFetch}
             />
+            {openImportModal && isDefined(id) && (
+                <BulkImportModal
+                    teamId={id}
+                    teamName={teamData?.team.name}
+                    onClose={() => setOpenImportModal(false)}
+                    onImportSuccess={() => reExecuteQuery({ requestPolicy: 'network-only' })}
+                />
+            )}
         </Container>
     );
 }

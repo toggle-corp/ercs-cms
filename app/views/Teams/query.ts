@@ -138,3 +138,20 @@ const UPDATE_TEAM_MEMBER_MUTATION = gql`
     }
 }
 `;
+
+const BULK_CREATE_TEAM_MEMBERS_MUTATION = gql`
+    mutation BulkCreateTeamMembers($data: TeamMemberBulkCreateInput!) {
+        bulkCreateTeamMembers(data: $data) {
+        ... on TeamMemberTypeListMutationResponseType {
+            errors
+            ok
+        }
+    }
+}
+`;
+
+const TEAM_MEMBERS_TEMPLATE = gql`
+    query TeamMembersTemplate {
+        createTeamMemberTemplate
+    }
+`;
