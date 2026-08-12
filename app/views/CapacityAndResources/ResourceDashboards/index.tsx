@@ -21,12 +21,14 @@ import StatusCell from '#components/StatusCell';
 import {
     AdminAreaLevel,
     type ExternalDashboardFilter,
+    Ordering,
     type ResourceDashboardsQuery,
     useCapacityAndResourceDetailQuery,
     useDeleteResourceDashboardMutation,
     useResourceDashboardsQuery,
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
+import useDashboardReorder, { createDragHandleColumn } from '#hooks/useDashboardReorder';
 import useFilterState from '#hooks/useFilterState';
 import useRegionMap from '#hooks/useRegionMap';
 import useRouting from '#hooks/useRouting';
@@ -70,7 +72,7 @@ function ResourceDashboards() {
 
     const regionMap = useRegionMap(AdminAreaLevel.Region);
 
-    const [{ data: detailData, fetching: detailFetching }] = useCapacityAndResourceDetailQuery({
+    const [{ data: detailData }] = useCapacityAndResourceDetailQuery({
         variables: { id: id ?? '' },
         pause: !id,
     });
@@ -88,16 +90,19 @@ function ResourceDashboards() {
                 limit,
                 offset,
             },
+            order: { order: Ordering.Asc },
         },
         pause: !id,
     });
 
-    const tableData: DashboardListItem[] = useMemo(() => (
+    const serverData: DashboardListItem[] = useMemo(() => (
         (data?.externalDashboards?.results ?? []).map((dashboard, index) => ({
             ...dashboard,
             no: String((page - 1) * limit + index + 1),
         }))
     ), [page, data, limit]);
+
+    const { tableData, rowModifier } = useDashboardReorder(serverData, page, limit);
 
     const onDeleteClick = useCallback(
         (dashboardId: string) => {
@@ -117,6 +122,7 @@ function ResourceDashboards() {
     );
 
     const columns = useMemo(() => [
+        createDragHandleColumn<DashboardListItem>(),
         createStringColumn<DashboardListItem, string | number>(
             'no',
             'No.',
@@ -137,6 +143,11 @@ function ResourceDashboards() {
             'Region',
             (item) => (isDefined(item.regionId) ? regionMap[item.regionId] : '-'),
         ),
+        createStringColumn<DashboardListItem, string | number>(
+            'order',
+            'Display Order',
+            (item) => (isDefined(item.order) ? String(item.order) : '-'),
+        ),
         createElementColumn<DashboardListItem, string | number, { isActive: boolean }>(
             'status',
             'Status',
@@ -152,7 +163,7 @@ function ResourceDashboards() {
             (_, datum) => ({
                 id: id ?? '',
                 dashboard: datum.id,
-                onDelete: onDeleteClick,
+                onDelete: () => onDeleteClick(datum.id),
                 itemTitle: datum.title,
                 to: 'editResourceDashboard',
             }),
@@ -169,7 +180,9 @@ function ResourceDashboards() {
     return (
         <Container
             withPadding
-            heading={`${detailData?.capacityAndResource?.title} Dashboards`}
+            heading={isDefined(detailData?.capacityAndResource?.title)
+                ? `${detailData.capacityAndResource.title} Dashboards`
+                : 'Dashboards'}
             headerDescription="Track, organize, and update the dashboards for this capacity and resource"
             filters={(
                 <ResourceDashboardsFilters
@@ -201,7 +214,8 @@ function ResourceDashboards() {
                 columns={columns}
                 data={tableData}
                 filtered={filtered}
-                pending={fetching || detailFetching}
+                pending={fetching}
+                rowModifier={rowModifier}
             />
         </Container>
     );

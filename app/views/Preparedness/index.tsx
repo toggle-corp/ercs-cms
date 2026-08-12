@@ -26,6 +26,7 @@ import {
     usePreparednessExternalDashboardsQuery,
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
+import useDashboardReorder, { createDragHandleColumn } from '#hooks/useDashboardReorder';
 import useFilterState from '#hooks/useFilterState';
 import useRegionMap from '#hooks/useRegionMap';
 import useRouting from '#hooks/useRouting';
@@ -92,12 +93,14 @@ function PreparednessList() {
     });
     const [, deleteExternalDashboard] = usePreparednessDeleteExternalDashboardMutation();
 
-    const tableData: PreparednessListItem[] = useMemo(() => (
+    const serverData: PreparednessListItem[] = useMemo(() => (
         (data?.externalDashboards?.results ?? []).map((dashboard, index) => ({
             ...dashboard,
             no: String((page - 1) * limit + index + 1),
         }))
     ), [page, data, limit]);
+
+    const { tableData, rowModifier } = useDashboardReorder(serverData, page, limit);
 
     const onDeleteClick = useCallback(
         (id: string) => {
@@ -117,6 +120,7 @@ function PreparednessList() {
     );
 
     const columns = useMemo(() => [
+        createDragHandleColumn<PreparednessListItem>(),
         createStringColumn<PreparednessListItem, string | number>(
             'no',
             'No.',
@@ -136,6 +140,11 @@ function PreparednessList() {
             'region',
             'Region',
             (item) => (isDefined(item.regionId) ? regionMap[item.regionId] : '-'),
+        ),
+        createStringColumn<PreparednessListItem, string | number>(
+            'order',
+            'Display Order',
+            (item) => (isDefined(item.order) ? String(item.order) : '-'),
         ),
         createElementColumn<PreparednessListItem, string | number, { isActive: boolean }>(
             'status',
@@ -199,6 +208,7 @@ function PreparednessList() {
                 data={tableData}
                 filtered={filtered}
                 pending={fetching}
+                rowModifier={rowModifier}
             />
         </Container>
     );
