@@ -32,7 +32,7 @@ import {
     idSelector,
 } from '#utils/common';
 
-import CapacityAndResourcesFilter from './CapacityAndResourcesFilter';
+import CapacityAndResourcesFilters from './CapacityAndResourcesFilters';
 
 type ResourcesListItem = NonNullable<NonNullable<CapacityAndResourcesQuery['capacityAndResources']>['results'][number]> & { no: string };
 
@@ -64,18 +64,20 @@ function CapacityAndResourcesList() {
     const alert = useAlert();
     const navigate = useRouting();
 
+    const queryVariables = useMemo(() => ({
+        pagination: {
+            limit,
+            offset,
+        },
+        filters: {
+            isActive: isDefined(filter.isActive) ? filter.isActive === 'true' : undefined,
+            title: filter.title ? { iContains: filter.title } : undefined,
+        },
+    }), [limit, offset, filter]);
+
     const [, deleteCapacityAndResource] = useDeleteCapacityAndResourceMutation();
     const [{ fetching, data }, reExecuteQuery] = useCapacityAndResourcesQuery({
-        variables: {
-            filters: {
-                isActive: isDefined(filter.isActive) ? filter.isActive === 'true' : undefined,
-                title: filter.title ? { iContains: filter.title } : undefined,
-            },
-            pagination: {
-                limit,
-                offset,
-            },
-        },
+        variables: queryVariables,
     });
 
     const tableData: ResourcesListItem[] = useMemo(() => (
@@ -85,12 +87,18 @@ function CapacityAndResourcesList() {
         }))
     ), [page, data, limit]);
 
-    const onDeleteClick = useCallback(
+    const handleDeleteClick = useCallback(
         (id: string) => {
             deleteCapacityAndResource({ id }).then((resp) => {
                 const result = resp.data?.deleteCapacityAndResource;
                 if (result?.ok) {
-                    reExecuteQuery();
+                    // NOTE: deleting the only row on a page would leave the
+                    // user on an empty page
+                    if (tableData.length === 1 && page > 1) {
+                        setPage(page - 1);
+                    } else {
+                        reExecuteQuery({ requestPolicy: 'network-only' });
+                    }
                     alert.show('Resource deleted successfully', { variant: 'success' });
                 } else {
                     alert.show(errorMessage, { variant: 'danger' });
@@ -99,7 +107,7 @@ function CapacityAndResourcesList() {
                 alert.show(errorMessage, { variant: 'danger' });
             });
         },
-        [deleteCapacityAndResource, reExecuteQuery, alert],
+        [deleteCapacityAndResource, reExecuteQuery, alert, tableData.length, page, setPage],
     );
 
     const columns = useMemo(() => [
@@ -137,13 +145,13 @@ function CapacityAndResourcesList() {
             EditDeleteActions,
             (_, datum) => ({
                 id: datum.id,
-                onDelete: onDeleteClick,
+                onDelete: handleDeleteClick,
                 itemTitle: datum.title,
                 to: 'editResources',
             }),
             { columnWidth: 150 },
         ),
-    ], [onDeleteClick]);
+    ], [handleDeleteClick]);
 
     const handleCreateClick = useCallback(() => {
         navigate('createResources');
@@ -154,7 +162,7 @@ function CapacityAndResourcesList() {
             withPadding
             heading="Capacity and Resources"
             filters={(
-                <CapacityAndResourcesFilter
+                <CapacityAndResourcesFilters
                     value={rawFilter}
                     onChange={setFilterField}
                     filtered={filtered}

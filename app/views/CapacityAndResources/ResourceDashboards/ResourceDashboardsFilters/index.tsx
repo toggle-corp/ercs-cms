@@ -14,7 +14,7 @@ import {
     valueSelector,
 } from '#utils/common';
 
-import type { DashboardFilterType } from '../index';
+import type { DashboardFilterType } from '..';
 
 export interface Props {
     value: DashboardFilterType;

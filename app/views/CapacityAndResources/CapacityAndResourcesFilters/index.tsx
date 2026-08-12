@@ -11,7 +11,7 @@ import {
     valueSelector,
 } from '#utils/common';
 
-import type { ResourcesFilterType } from '../index';
+import type { ResourcesFilterType } from '..';
 
 export interface Props {
     value: ResourcesFilterType;
@@ -20,7 +20,7 @@ export interface Props {
     onReset: () => void;
 }
 
-function CapacityAndResourcesFilter({
+function CapacityAndResourcesFilters({
     value,
     onChange,
     filtered,
@@ -55,4 +55,4 @@ function CapacityAndResourcesFilter({
     );
 }
 
-export default CapacityAndResourcesFilter;
+export default CapacityAndResourcesFilters;

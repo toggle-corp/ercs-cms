@@ -14,7 +14,10 @@ import {
     createElementColumn,
     createStringColumn,
 } from '@ifrc-go/ui/utils';
-import { isDefined } from '@togglecorp/fujs';
+import {
+    isDefined,
+    isNotDefined,
+} from '@togglecorp/fujs';
 
 import EditDeleteActions, { type Props as EditDeleteActionsProps } from '#components/EditDeleteActions';
 import StatusCell from '#components/StatusCell';
@@ -28,7 +31,7 @@ import {
     useResourceDashboardsQuery,
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
-import useDashboardReorder, { createDragHandleColumn } from '#hooks/useDashboardReorder';
+import useDashboardReorder from '#hooks/useDashboardReorder';
 import useFilterState from '#hooks/useFilterState';
 import useRegionMap from '#hooks/useRegionMap';
 import useRouting from '#hooks/useRouting';
@@ -36,6 +39,7 @@ import {
     errorMessage,
     idSelector,
 } from '#utils/common';
+import createDragHandleColumn from '#utils/table';
 
 import ResourceDashboardsFilters from './ResourceDashboardsFilters';
 
@@ -74,26 +78,28 @@ function ResourceDashboards() {
     const regionMap = useRegionMap(AdminAreaLevel.Region);
 
     const [{ data: detailData }] = useCapacityAndResourceDetailQuery({
-        variables: { id: id ?? '' },
-        pause: !id,
+        variables: { id: isDefined(id) ? id : '' },
+        pause: isNotDefined(id),
     });
+
+    const queryVariables = useMemo(() => ({
+        pagination: {
+            limit,
+            offset,
+        },
+        filters: {
+            capacityAndResources: isDefined(id) ? [id] : undefined,
+            isActive: isDefined(filter.isActive) ? filter.isActive === 'true' : undefined,
+            search: filter.search || undefined,
+            regions: filter.regions?.length ? filter.regions : undefined,
+        },
+        order: { order: Ordering.Asc },
+    }), [limit, offset, filter, id]);
 
     const [, deleteResourceDashboard] = useDeleteResourceDashboardMutation();
     const [{ fetching, data }, reExecuteQuery] = useResourceDashboardsQuery({
-        variables: {
-            filters: {
-                capacityAndResources: isDefined(id) ? [id] : undefined,
-                isActive: isDefined(filter.isActive) ? filter.isActive === 'true' : undefined,
-                search: filter.search,
-                regions: filter.regions?.length === 0 ? undefined : filter.regions,
-            },
-            pagination: {
-                limit,
-                offset,
-            },
-            order: { order: Ordering.Asc },
-        },
-        pause: !id,
+        variables: queryVariables,
+        pause: isNotDefined(id),
     });
 
     const serverData: DashboardListItem[] = useMemo(() => (
@@ -103,14 +109,29 @@ function ResourceDashboards() {
         }))
     ), [page, data, limit]);
 
-    const { tableData, rowModifier } = useDashboardReorder(serverData, page, limit);
+    const handleReorderSuccess = useCallback(() => {
+        reExecuteQuery({ requestPolicy: 'network-only' });
+    }, [reExecuteQuery]);
 
-    const onDeleteClick = useCallback(
+    const { tableData, rowModifier } = useDashboardReorder(
+        serverData,
+        page,
+        limit,
+        handleReorderSuccess,
+    );
+
+    const handleDeleteClick = useCallback(
         (dashboardId: string) => {
             deleteResourceDashboard({ id: dashboardId }).then((resp) => {
                 const result = resp.data?.deleteExternalDashboard;
                 if (result?.ok) {
-                    reExecuteQuery();
+                    // NOTE: deleting the only row on a page would leave the
+                    // user on an empty page
+                    if (tableData.length === 1 && page > 1) {
+                        setPage(page - 1);
+                    } else {
+                        reExecuteQuery({ requestPolicy: 'network-only' });
+                    }
                     alert.show('Dashboard deleted successfully', { variant: 'success' });
                 } else {
                     alert.show(errorMessage, { variant: 'danger' });
@@ -119,7 +140,7 @@ function ResourceDashboards() {
                 alert.show(errorMessage, { variant: 'danger' });
             });
         },
-        [deleteResourceDashboard, reExecuteQuery, alert],
+        [deleteResourceDashboard, reExecuteQuery, alert, tableData.length, page, setPage],
     );
 
     const columns = useMemo(() => [
@@ -164,13 +185,13 @@ function ResourceDashboards() {
             (_, datum) => ({
                 id: id ?? '',
                 dashboard: datum.id,
-                onDelete: () => onDeleteClick(datum.id),
+                onDelete: handleDeleteClick,
                 itemTitle: datum.title,
                 to: 'editResourceDashboard',
             }),
             { columnWidth: 150 },
         ),
-    ], [onDeleteClick, id, regionMap]);
+    ], [handleDeleteClick, id, regionMap]);
 
     const handleCreateClick = useCallback(() => {
         if (isDefined(id)) {

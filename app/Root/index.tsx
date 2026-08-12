@@ -42,6 +42,13 @@ const gqlClient = new Client({
                     logout: (_result, _args, cache) => {
                         cache.updateQuery({ query: ME_QUERY }, () => ({ me: null }));
                     },
+                    bulkUpdateExternalDashboards: (_result, _args, cache) => {
+                        cache.inspectFields('Query')
+                            .filter((field) => field.fieldName === 'externalDashboards')
+                            .forEach((field) => {
+                                cache.invalidate('Query', field.fieldName, field.arguments);
+                            });
+                    },
                 },
             },
         }),

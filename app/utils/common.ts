@@ -63,8 +63,6 @@ export function getReadableFileSize(bytes: number | null | undefined): string {
     return `${exponent === 0 ? value : value.toFixed(1)} ${units[exponent]}`;
 }
 
-// NOTE: keep in sync with backend/utils/validators.py and
-// backend/apps/reports/serializers.py
 export const ACCEPTED_REPORT_FILE_TYPES = '.pdf,.doc,.docx,.png,.jpg,.jpeg';
 export const ACCEPTED_IMAGE_TYPES = 'image/*';
 export const ACCEPTED_IMPORT_FILE_TYPES = '.xlsx,.xlsm';

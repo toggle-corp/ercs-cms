@@ -7,6 +7,10 @@ const BULK_UPDATE_EXTERNAL_DASHBOARDS = gql`
             ... on ExternalDashboardTypeListMutationResponseType {
                 ok
                 errors
+                result {
+                    id
+                    order
+                }
             }
         }
     }
