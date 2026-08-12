@@ -68,13 +68,16 @@ const getUserSchema = (isCreate: boolean): FormSchema => ({
             requiredValidation: requiredStringCondition,
         },
         role: {},
-        region: {},
+        region: {
+            required: true,
+            requiredValidation: requiredStringCondition,
+        },
         isActive: {},
     }),
 });
 
 const defaultEditFormValue: PartialFormType = {
-    isActive: false,
+    isActive: true,
 };
 
 function UserForm() {
@@ -266,6 +269,7 @@ function UserForm() {
                 <InputSection
                     title="Region"
                     description="Select the region"
+                    withAsteriskOnTitle
                 >
                     <RegionSelectInput
                         name="region"

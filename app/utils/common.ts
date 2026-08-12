@@ -46,6 +46,20 @@ export const statusFilterOptions = [
 
 export const errorMessage = 'Something went wrong. Please try again. ';
 
+export function getReadableFileSize(bytes: number | null | undefined): string {
+    if (!bytes || bytes <= 0) {
+        return '0 B';
+    }
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const exponent = Math.min(
+        Math.floor(Math.log(bytes) / Math.log(1024)),
+        units.length - 1,
+    );
+    const value = bytes / (1024 ** exponent);
+    // Show one decimal place for KB and larger, none for bytes
+    return `${exponent === 0 ? value : value.toFixed(1)} ${units[exponent]}`;
+}
+
 interface ServerError {
     field: string;
     messages: string | null;
