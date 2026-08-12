@@ -40,7 +40,12 @@ import {
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
 import useGlobalEnums from '#hooks/useGlobalEnums';
-import { errorMessage } from '#utils/common';
+import {
+    ACCEPTED_IMPORT_FILE_TYPES,
+    errorMessage,
+    MAX_REPORT_FILE_SIZE,
+    validateFile,
+} from '#utils/common';
 
 type MemberField = keyof Omit<TeamMemberCreateInput, 'team' | 'order'>;
 
@@ -226,6 +231,11 @@ function BulkImportModal(props: Props) {
         if (isNotDefined(file)) {
             return;
         }
+        const fileError = validateFile(file, MAX_REPORT_FILE_SIZE, ACCEPTED_IMPORT_FILE_TYPES);
+        if (isDefined(fileError)) {
+            setResult({ errors: [fileError] });
+            return;
+        }
         setReading(true);
         readSheet(file).then((rows) => {
             setResult(validateRows(rows, { teamId, sexKeyByName, regionIdByName }));
@@ -265,8 +275,8 @@ function BulkImportModal(props: Props) {
 
     return (
         <Modal
-            heading={`IMPORT TEAM MEMBERS FOR ${teamName ?? ''}`}
-            headerDescription="Please upload team member in xlxs format"
+            heading={isDefined(teamName) ? `Import Team Members for ${teamName}` : 'Import Team Members'}
+            headerDescription="Please upload team members in xlsx format"
             onClose={onClose}
             footerActions={isDefined(members) ? (
                 <Button
@@ -290,7 +300,7 @@ function BulkImportModal(props: Props) {
                 >
                     <RawFileInput
                         name="file"
-                        accept=".xlsx, .xlsm"
+                        accept={ACCEPTED_IMPORT_FILE_TYPES}
                         onChange={handleFileChange}
                         styleVariant="outline"
                         colorVariant="primary"

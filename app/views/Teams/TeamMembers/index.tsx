@@ -17,6 +17,7 @@ import {
 } from '@ifrc-go/ui';
 import {
     createElementColumn,
+    createNumberColumn,
     createStringColumn,
 } from '@ifrc-go/ui/utils';
 import { isDefined } from '@togglecorp/fujs';
@@ -42,7 +43,7 @@ import {
 
 import TeamMembersFilters from './TeamMembersFilters';
 
-type TeamMembersListItem = NonNullable<NonNullable<TeamMembersQuery['teamMembers']>['results'][number] & { no: string }>;
+type TeamMembersListItem = NonNullable<NonNullable<TeamMembersQuery['teamMembers']>['results'][number]> & { no: number };
 
 const defaultFilter: TeamMemberFilter = {
     search: undefined,
@@ -56,6 +57,7 @@ function TeamMembers() {
         rawFilter,
         filtered,
         setFilterField,
+        resetFilter,
         page,
         setPage,
         limit,
@@ -94,14 +96,12 @@ function TeamMembers() {
         pause: !id,
     });
 
-    const tableData = useMemo(() => (
-        data?.teamMembers.results.map((user, index) => {
-            const no = (page - 1) * limit + index + 1;
-            return {
-                ...user,
-                no,
-            };
-        }) as unknown as TeamMembersListItem[]), [page, data, limit]);
+    const tableData: TeamMembersListItem[] = useMemo(() => (
+        (data?.teamMembers?.results ?? []).map((teamMember, index) => ({
+            ...teamMember,
+            no: (page - 1) * limit + index + 1,
+        }))
+    ), [page, data, limit]);
 
     const onDeleteClick = useCallback(
         (memberId: string) => {
@@ -120,7 +120,7 @@ function TeamMembers() {
         [deleteTeamMember, reExecuteQuery, alert],
     );
     const columns = useMemo(() => [
-        createStringColumn<TeamMembersListItem, string | number>(
+        createNumberColumn<TeamMembersListItem, string | number>(
             'no',
             'No.',
             (team) => team.no,
@@ -191,6 +191,8 @@ function TeamMembers() {
                 <TeamMembersFilters
                     value={rawFilter}
                     onChange={setFilterField}
+                    onReset={resetFilter}
+                    filtered={filtered}
                 />
             )}
             footerActions={(

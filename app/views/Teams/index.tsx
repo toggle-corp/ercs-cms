@@ -6,14 +6,13 @@ import { AddFillIcon } from '@ifrc-go/icons';
 import {
     Button,
     Container,
-    DateInput,
     Pager,
     Table,
-    TextInput,
 } from '@ifrc-go/ui';
 import {
     createDateColumn,
     createElementColumn,
+    createNumberColumn,
     createStringColumn,
 } from '@ifrc-go/ui/utils';
 
@@ -33,9 +32,11 @@ import {
     idSelector,
 } from '#utils/common';
 
-type TeamsListItem = NonNullable<NonNullable<TeamsQuery['teams']>['results'][number] & { no: string }>;
+import TeamsFilters from './TeamsFilters';
 
-interface TeamsFilterType extends Omit<TeamFilter, 'createdAt'> {
+type TeamsListItem = NonNullable<NonNullable<TeamsQuery['teams']>['results'][number]> & { no: number };
+
+export interface TeamsFilterType extends Omit<TeamFilter, 'createdAt'> {
     createdAtGte: string | undefined;
     createdAtLte: string | undefined;
 }
@@ -52,6 +53,7 @@ function Teams() {
         rawFilter,
         filtered,
         setFilterField,
+        resetFilter,
         page,
         setPage,
         limit,
@@ -80,14 +82,12 @@ function Teams() {
     const [{ fetching, data }, reExecuteQuery] = useTeamsQuery({ variables: queryVariables });
     const [, deleteTeam] = useDeleteTeamMutation();
 
-    const tableData = useMemo(() => (
-        data?.teams.results.map((user, index) => {
-            const no = (page - 1) * limit + index + 1;
-            return {
-                ...user,
-                no,
-            };
-        }) as unknown as TeamsListItem[]), [page, data, limit]);
+    const tableData: TeamsListItem[] = useMemo(() => (
+        (data?.teams?.results ?? []).map((team, index) => ({
+            ...team,
+            no: (page - 1) * limit + index + 1,
+        }))
+    ), [page, data, limit]);
 
     const onDeleteClick = useCallback(
         (id: string) => {
@@ -107,7 +107,7 @@ function Teams() {
     );
 
     const columns = useMemo(() => [
-        createStringColumn<TeamsListItem, string | number>(
+        createNumberColumn<TeamsListItem, string | number>(
             'no',
             'No.',
             (team) => team.no,
@@ -164,26 +164,12 @@ function Teams() {
             heading="Teams"
             headerDescription="Manage a dedicated team committed to delivering impactful solutions"
             filters={(
-                <>
-                    <DateInput
-                        name="createdAtGte"
-                        label="Created at start date"
-                        value={rawFilter.createdAtGte}
-                        onChange={setFilterField}
-                    />
-                    <DateInput
-                        name="createdAtLte"
-                        label="Created at end date"
-                        value={rawFilter.createdAtLte}
-                        onChange={setFilterField}
-                    />
-                    <TextInput
-                        name="search"
-                        placeholder="Search"
-                        value={rawFilter.search}
-                        onChange={setFilterField}
-                    />
-                </>
+                <TeamsFilters
+                    value={rawFilter}
+                    onChange={setFilterField}
+                    onReset={resetFilter}
+                    filtered={filtered}
+                />
             )}
             footerActions={(
                 <Pager

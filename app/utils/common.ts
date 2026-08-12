@@ -49,7 +49,6 @@ export const statusFilterOptions = [
 
 export const errorMessage = 'Something went wrong. Please try again. ';
 
-<<<<<<< HEAD
 export function getReadableFileSize(bytes: number | null | undefined): string {
     if (!bytes || bytes <= 0) {
         return '0 B';
@@ -64,12 +63,11 @@ export function getReadableFileSize(bytes: number | null | undefined): string {
     return `${exponent === 0 ? value : value.toFixed(1)} ${units[exponent]}`;
 }
 
-||||||| parent of e93c657 (feat(documents): add cover image in documents)
-=======
 // NOTE: keep in sync with backend/utils/validators.py and
 // backend/apps/reports/serializers.py
 export const ACCEPTED_REPORT_FILE_TYPES = '.pdf,.doc,.docx,.png,.jpg,.jpeg';
 export const ACCEPTED_IMAGE_TYPES = 'image/*';
+export const ACCEPTED_IMPORT_FILE_TYPES = '.xlsx,.xlsm';
 export const MAX_REPORT_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 export const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
 
@@ -103,7 +101,6 @@ export function validateFile(file: File, maxSize: number, accept: string | undef
     return undefined;
 }
 
->>>>>>> e93c657 (feat(documents): add cover image in documents)
 interface ServerError {
     field: string;
     messages: string | null;

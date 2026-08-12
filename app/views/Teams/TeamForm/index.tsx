@@ -26,6 +26,7 @@ import {
     useForm,
 } from '@togglecorp/toggle-form';
 
+import NonFieldError from '#components/NonFieldError';
 import {
     type TeamCreateInput,
     type TeamUpdateInput,
@@ -138,7 +139,9 @@ function TeamForm() {
         }
     }, [teamDetailFetch, teamData, setValue]);
 
-    if (teamDetailFetch || createPending || updatePending) {
+    const pending = createPending || updatePending || teamDetailFetch;
+
+    if (teamDetailFetch) {
         return (
             <BlockLoading
                 withoutBorder
@@ -165,6 +168,7 @@ function TeamForm() {
                         name={undefined}
                         onClick={handleFormSubmit}
                         styleVariant="filled"
+                        disabled={pending}
                     >
                         Save
                     </Button>
@@ -172,6 +176,10 @@ function TeamForm() {
             )}
         >
             <ListView layout="block">
+                <NonFieldError
+                    error={formError}
+                    withFallbackError
+                />
                 <InputSection
                     title="Team name"
                     description="Enter the title name of the team"
@@ -182,6 +190,7 @@ function TeamForm() {
                         value={value.name}
                         onChange={setFieldValue}
                         error={error?.name}
+                        disabled={pending}
                     />
                 </InputSection>
                 <InputSection
@@ -193,6 +202,7 @@ function TeamForm() {
                         value={value.description}
                         onChange={setFieldValue}
                         error={error?.description}
+                        disabled={pending}
                     />
                 </InputSection>
             </ListView>
