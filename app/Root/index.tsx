@@ -27,6 +27,7 @@ import {
     useGlobalEnumsQuery,
 } from '#generated/types/graphql';
 import useAlertContextProviderValue from '#hooks/useAlertContextProviderValue';
+import { ME_QUERY } from '#views/RootLayout';
 
 const COOKIE_NAME = `ERCS-${environment}-CSRFTOKEN`;
 const GRAPHQL_ENDPOINT = `${api}/graphql/`;
@@ -35,7 +36,22 @@ const cookies = new Cookies();
 const gqlClient = new Client({
     url: GRAPHQL_ENDPOINT,
     exchanges: [
-        cacheExchange({}),
+        cacheExchange({
+            updates: {
+                Mutation: {
+                    logout: (_result, _args, cache) => {
+                        cache.updateQuery({ query: ME_QUERY }, () => ({ me: null }));
+                    },
+                    bulkUpdateExternalDashboards: (_result, _args, cache) => {
+                        cache.inspectFields('Query')
+                            .filter((field) => field.fieldName === 'externalDashboards')
+                            .forEach((field) => {
+                                cache.invalidate('Query', field.fieldName, field.arguments);
+                            });
+                    },
+                },
+            },
+        }),
         fetchExchange,
     ],
     fetchOptions: () => ({

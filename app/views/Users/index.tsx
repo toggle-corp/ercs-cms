@@ -87,6 +87,7 @@ function UsersList() {
         rawFilter,
         filtered,
         setFilterField,
+        resetFilter,
         page,
         setPage,
         limit,
@@ -220,6 +221,8 @@ function UsersList() {
                 <UserListFilters
                     value={rawFilter}
                     onChange={setFilterField}
+                    onReset={resetFilter}
+                    filtered={filtered}
                 />
             )}
             headerDescription="Manage authenticated users and control access"

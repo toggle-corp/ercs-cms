@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+    Button,
     SelectInput,
     TextInput,
 } from '@ifrc-go/ui';
@@ -20,9 +21,13 @@ import type { UsersFilterType } from '../index';
 export interface Props {
     value: UsersFilterType;
     onChange: (...args: EntriesAsList<UsersFilterType>) => void;
+    filtered: boolean;
+    onReset: () => void;
 }
 
-function UserFilter({ value, onChange }: Props) {
+function UserFilter({
+    value, onChange, filtered, onReset,
+}: Props) {
     const [regionOptions, setRegionOptions] = useState<
         AdminAreaItem[] | undefined | null
     >([]);
@@ -64,6 +69,14 @@ function UserFilter({ value, onChange }: Props) {
                 value={value.search}
                 onChange={onChange}
             />
+            <Button
+                name={undefined}
+                onClick={onReset}
+                title="Reset"
+                disabled={!filtered}
+            >
+                Reset
+            </Button>
         </>
     );
 }

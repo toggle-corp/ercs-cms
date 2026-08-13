@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+    Button,
     SelectInput,
     TextInput,
 } from '@ifrc-go/ui';
@@ -23,9 +24,17 @@ export interface Props {
     value: DataAndReportsFilterType;
     onChange: (...args: EntriesAsList<DataAndReportsFilterType>) => void;
     thematicAreaOptions: ThematicAreaOption[] | undefined;
+    filtered: boolean;
+    onReset: () => void;
 }
 
-function DataAndReportsFilters({ value, onChange, thematicAreaOptions }: Props) {
+function DataAndReportsFilters({
+    value,
+    onChange,
+    thematicAreaOptions,
+    filtered,
+    onReset,
+}: Props) {
     const [regionOptions, setRegionOptions] = useState<
         AdminAreaItem[] | undefined | null
     >([]);
@@ -56,6 +65,14 @@ function DataAndReportsFilters({ value, onChange, thematicAreaOptions }: Props) 
                 value={value.search}
                 onChange={onChange}
             />
+            <Button
+                name={undefined}
+                onClick={onReset}
+                title="Reset"
+                disabled={!filtered}
+            >
+                Reset
+            </Button>
         </>
     );
 }

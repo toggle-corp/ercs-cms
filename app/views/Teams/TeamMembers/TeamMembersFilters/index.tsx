@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { TextInput } from '@ifrc-go/ui';
+import {
+    Button,
+    TextInput,
+} from '@ifrc-go/ui';
 import type { EntriesAsList } from '@togglecorp/toggle-form';
 
 import RegionSearchMultiSelectInput, { type AdminAreaItem } from '#components/RegionSearchMultiSelectInput';
@@ -8,13 +11,20 @@ import {
     type TeamMemberFilter,
 } from '#generated/types/graphql';
 
-interface Props {
+export interface Props {
     value: TeamMemberFilter
     onChange: (...args: EntriesAsList<TeamMemberFilter>) => void;
+    onReset: () => void;
+    filtered: boolean;
 }
 
 function TeamMembersFilters(props: Props) {
-    const { value, onChange } = props;
+    const {
+        value,
+        onChange,
+        onReset,
+        filtered,
+    } = props;
 
     const [teamMemberOptions, setTeamMemberOptions] = useState<
         AdminAreaItem[] | undefined | null
@@ -46,6 +56,14 @@ function TeamMembersFilters(props: Props) {
                 value={value.search}
                 onChange={onChange}
             />
+            <Button
+                name={undefined}
+                onClick={onReset}
+                title="Reset"
+                disabled={!filtered}
+            >
+                Reset
+            </Button>
         </>
     );
 }

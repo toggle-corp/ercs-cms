@@ -24,6 +24,10 @@ const ONLINE_INTERACTIVE_DETAIL = gql`
                 url
                 name
             }
+            coverImage {
+                url
+                name
+            }
         }
     }
 `;

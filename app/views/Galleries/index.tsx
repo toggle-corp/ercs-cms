@@ -33,7 +33,7 @@ import {
 
 import GalleryFilter from './GalleryFilter';
 
-type GalleryAlbumListItem = NonNullable<NonNullable<GalleryAlbumListQuery['galleryAlbums']>['results'][number] & { no: number }>;
+type GalleryAlbumListItem = NonNullable<NonNullable<GalleryAlbumListQuery['galleryAlbums']>['results'][number]> & { no: number };
 
 export interface GalleryAlbumsFilterType extends Omit<GalleryAlbumFilter, 'createdAt'> {
     createdAtGte: string | undefined;
@@ -102,14 +102,11 @@ function Galleries() {
         [deleteGalleryAlbum, reExecuteQuery, alert],
     );
 
-    const tableData = useMemo(() => (
-        data?.galleryAlbums.results.map((album, index) => {
-            const no = (page - 1) * limit + index + 1;
-            return {
-                ...album,
-                no,
-            };
-        })
+    const tableData: GalleryAlbumListItem[] = useMemo(() => (
+        (data?.galleryAlbums?.results ?? []).map((album, index) => ({
+            ...album,
+            no: (page - 1) * limit + index + 1,
+        }))
     ), [page, data, limit]);
 
     const columns = useMemo(() => [

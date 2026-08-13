@@ -175,7 +175,7 @@ function TeamMemberForm() {
 
     const pending = createPending || updatePending || teamMemberDetailFetch;
 
-    if (pending) {
+    if (teamMemberDetailFetch) {
         return (
             <BlockLoading
                 withoutBorder

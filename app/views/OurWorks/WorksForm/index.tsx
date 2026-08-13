@@ -13,6 +13,7 @@ import {
     NumberInput,
     RadioInput,
     SelectInput,
+    TextArea,
     TextInput,
 } from '@ifrc-go/ui';
 import {
@@ -266,7 +267,7 @@ function WorksForm() {
                         title="Description"
                         description="Enter the description about the dashboard"
                     >
-                        <TextInput
+                        <TextArea
                             name="description"
                             value={value.description}
                             onChange={setFieldValue}

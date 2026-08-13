@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+    Button,
     SelectInput,
     TextInput,
 } from '@ifrc-go/ui';
@@ -13,14 +14,18 @@ import {
     valueSelector,
 } from '#utils/common';
 
-import type { DashboardFilterType } from '../index';
+import type { DashboardFilterType } from '..';
 
 export interface Props {
     value: DashboardFilterType;
     onChange: (...args: EntriesAsList<DashboardFilterType>) => void;
+    filtered: boolean;
+    onReset: () => void;
 }
 
-function ResourceDashboardsFilters({ value, onChange }: Props) {
+function ResourceDashboardsFilters({
+    value, onChange, filtered, onReset,
+}: Props) {
     const [regionOptions, setRegionOptions] = useState<
         AdminAreaItem[] | undefined | null
     >([]);
@@ -51,6 +56,14 @@ function ResourceDashboardsFilters({ value, onChange }: Props) {
                 value={value.search}
                 onChange={onChange}
             />
+            <Button
+                name={undefined}
+                onClick={onReset}
+                title="Reset"
+                disabled={!filtered}
+            >
+                Reset
+            </Button>
         </>
     );
 }

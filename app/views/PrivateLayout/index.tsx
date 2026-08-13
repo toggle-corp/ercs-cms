@@ -16,6 +16,7 @@ import {
     ShieldStarLineIcon,
 } from '@ifrc-go/icons';
 
+import Breadcrumbs from '#components/Breadcrumbs';
 import Navbar from '#components/Navbar';
 import Navigation, { type NavigationItem } from '#components/Navigation';
 import Page from '#components/Page';
@@ -105,6 +106,7 @@ function PrivateLayout() {
                     />
                 )}
             >
+                <Breadcrumbs />
                 <Outlet />
             </Page>
         </>

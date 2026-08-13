@@ -5,16 +5,16 @@ import {
 } from '@ifrc-go/ui';
 import { type EntriesAsList } from '@togglecorp/toggle-form';
 
-import type { DocumentFilterType } from '..';
+import type { TeamsFilterType } from '..';
 
 export interface Props {
-    value: DocumentFilterType;
-    onChange: (...args: EntriesAsList<DocumentFilterType>) => void;
+    value: TeamsFilterType;
+    onChange: (...args: EntriesAsList<TeamsFilterType>) => void;
     onReset: () => void;
     filtered: boolean;
 }
 
-function DocumentsFilters({
+function TeamsFilters({
     value, onChange, onReset, filtered,
 }: Props) {
     return (
@@ -32,9 +32,9 @@ function DocumentsFilters({
                 onChange={onChange}
             />
             <TextInput
-                name="title"
-                placeholder="Search by title"
-                value={value.title}
+                name="search"
+                placeholder="Search"
+                value={value.search}
                 onChange={onChange}
             />
             <Button
@@ -49,4 +49,4 @@ function DocumentsFilters({
     );
 }
 
-export default DocumentsFilters;
+export default TeamsFilters;

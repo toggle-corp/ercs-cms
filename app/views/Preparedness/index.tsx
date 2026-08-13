@@ -21,12 +21,13 @@ import {
     AdminAreaLevel,
     DashboardPage,
     type ExternalDashboardFilter,
+    Ordering,
     type PreparednessExternalDashboardsQuery,
     usePreparednessDeleteExternalDashboardMutation,
     usePreparednessExternalDashboardsQuery,
 } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
-import useDashboardReorder, { createDragHandleColumn } from '#hooks/useDashboardReorder';
+import useDashboardReorder from '#hooks/useDashboardReorder';
 import useFilterState from '#hooks/useFilterState';
 import useRegionMap from '#hooks/useRegionMap';
 import useRouting from '#hooks/useRouting';
@@ -34,6 +35,7 @@ import {
     errorMessage,
     idSelector,
 } from '#utils/common';
+import createDragHandleColumn from '#utils/table';
 
 import PreparednessFilter from './PreparednessFilter';
 
@@ -56,6 +58,7 @@ function PreparednessList() {
         rawFilter,
         filtered,
         setFilterField,
+        resetFilter,
         page,
         setPage,
         limit,
@@ -86,6 +89,7 @@ function PreparednessList() {
             },
             page: filter.page ?? null,
         },
+        order: { order: Ordering.Asc },
     }), [limit, offset, filter]);
 
     const [{ fetching, data }, reExecuteQuery] = usePreparednessExternalDashboardsQuery({
@@ -100,14 +104,27 @@ function PreparednessList() {
         }))
     ), [page, data, limit]);
 
-    const { tableData, rowModifier } = useDashboardReorder(serverData, page, limit);
+    const handleReorderSuccess = useCallback(() => {
+        reExecuteQuery({ requestPolicy: 'network-only' });
+    }, [reExecuteQuery]);
 
-    const onDeleteClick = useCallback(
+    const { tableData, rowModifier } = useDashboardReorder(
+        serverData,
+        page,
+        limit,
+        handleReorderSuccess,
+    );
+
+    const handleDeleteClick = useCallback(
         (id: string) => {
             deleteExternalDashboard({ id }).then((resp) => {
                 const result = resp.data?.deleteExternalDashboard;
                 if (result?.ok) {
-                    reExecuteQuery();
+                    if (tableData.length === 1 && page > 1) {
+                        setPage(page - 1);
+                    } else {
+                        reExecuteQuery({ requestPolicy: 'network-only' });
+                    }
                     alert.show('Dashboard deleted successfully', { variant: 'success' });
                 } else {
                     alert.show(errorMessage, { variant: 'danger' });
@@ -116,7 +133,7 @@ function PreparednessList() {
                 alert.show(errorMessage, { variant: 'danger' });
             });
         },
-        [deleteExternalDashboard, reExecuteQuery, alert],
+        [deleteExternalDashboard, reExecuteQuery, alert, tableData.length, page, setPage],
     );
 
     const columns = useMemo(() => [
@@ -160,13 +177,13 @@ function PreparednessList() {
             EditDeleteActions,
             (_, datum) => ({
                 id: datum.id,
-                onDelete: onDeleteClick,
+                onDelete: handleDeleteClick,
                 itemTitle: datum.title,
                 to: 'editPreparedness',
             }),
             { columnWidth: 150 },
         ),
-    ], [onDeleteClick, regionMap]);
+    ], [handleDeleteClick, regionMap]);
 
     const handleCreateClick = useCallback(() => {
         navigate('createPreparedness');
@@ -180,6 +197,8 @@ function PreparednessList() {
                 <PreparednessFilter
                     value={rawFilter}
                     onChange={setFilterField}
+                    filtered={filtered}
+                    onReset={resetFilter}
                 />
             )}
             headerDescription="Track, organize, and update preparedness dashboards"

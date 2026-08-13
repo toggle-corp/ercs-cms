@@ -1,4 +1,5 @@
 import {
+    Button,
     SelectInput,
     TextInput,
 } from '@ifrc-go/ui';
@@ -10,14 +11,21 @@ import {
     valueSelector,
 } from '#utils/common';
 
-import type { ResourcesFilterType } from '../index';
+import type { ResourcesFilterType } from '..';
 
 export interface Props {
     value: ResourcesFilterType;
     onChange: (...args: EntriesAsList<ResourcesFilterType>) => void;
+    filtered: boolean;
+    onReset: () => void;
 }
 
-function CapacityAndResourcesFilter({ value, onChange }: Props) {
+function CapacityAndResourcesFilters({
+    value,
+    onChange,
+    filtered,
+    onReset,
+}: Props) {
     return (
         <>
             <SelectInput
@@ -30,13 +38,21 @@ function CapacityAndResourcesFilter({ value, onChange }: Props) {
                 labelSelector={labelSelector}
             />
             <TextInput
-                name="search"
+                name="title"
                 placeholder="Search by title"
-                value={value.search}
+                value={value.title}
                 onChange={onChange}
             />
+            <Button
+                name={undefined}
+                onClick={onReset}
+                title="Reset"
+                disabled={!filtered}
+            >
+                Reset
+            </Button>
         </>
     );
 }
 
-export default CapacityAndResourcesFilter;
+export default CapacityAndResourcesFilters;

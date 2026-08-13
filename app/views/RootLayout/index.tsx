@@ -13,14 +13,15 @@ import { useMeQuery } from '#generated/types/graphql';
 
 import styles from './styles.module.css';
 
+// NOTE: Primes the CSRF cookie before the first mutation. The graphql route is
+// currently csrf_exempt on the backend, so this is a no-op until that changes.
 const fetchHealth = fetch(`${api}/health-check/?format=json`, {
     method: 'GET',
     credentials: 'include',
 })
     .then((res) => res.json());
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ME_QUERY = gql`
+export const ME_QUERY = gql`
     query Me {
         me {
             role
