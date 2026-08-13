@@ -161,7 +161,7 @@ const resourceDashboards: RouteConfig = {
 };
 
 const createResourceDashboard: RouteConfig = {
-    path: '/capacity-and-resources/:id/dashboards/create',
+    path: '/capacity-and-resources/:id/dashboards/new',
     load: () => import('#views/CapacityAndResources/ResourceDashboards/ResourceDashboardForm'),
     visibility: 'is-authenticated',
 };
@@ -196,7 +196,7 @@ const onlineInteractive: RouteConfig = {
 };
 
 const createOnlineInteractive: RouteConfig = {
-    path: '/online-interactive/create',
+    path: '/online-interactive/new',
     load: () => import('#views/OnlineInteractive/OnlineInteractiveForm'),
     visibility: 'is-authenticated',
 };
