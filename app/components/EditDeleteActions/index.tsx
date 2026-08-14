@@ -54,7 +54,7 @@ function EditDeleteActions(props: Props) {
                 <EditTwoLineIcon />
             </Button>
             <ConfirmButton
-                name={id}
+                name={dashboard ?? member ?? id}
                 onConfirm={onDelete}
                 confirmMessage={`Are you sure you want to delete ${`"${itemTitle}"` || 'this item'}? This action cannot be undone.`}
                 title="Delete"

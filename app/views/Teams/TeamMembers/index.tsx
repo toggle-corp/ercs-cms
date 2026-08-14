@@ -167,7 +167,7 @@ function TeamMembers() {
                 EditDeleteActions,
                 (_, datum) => ({
                     id: id ?? '',
-                    onDelete: () => onDeleteClick(datum.id),
+                    onDelete: onDeleteClick,
                     itemTitle: datum.name,
                     member: datum.id,
                     to: 'editTeamMember',
