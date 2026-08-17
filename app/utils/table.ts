@@ -1,12 +1,13 @@
-import { DragDropLineIcon } from '@ifrc-go/icons';
 import { createElementColumn } from '@ifrc-go/ui/utils';
 
+import DragHandle from '#components/DragHandle';
+
 function createDragHandleColumn<T>() {
-    return createElementColumn<T, string | number, { title: string }>(
+    return createElementColumn<T, string | number, object>(
         'dragHandle',
         '',
-        DragDropLineIcon,
-        () => ({ title: 'Drag to reorder' }),
+        DragHandle,
+        () => ({}),
         { columnWidth: 40 },
     );
 }
