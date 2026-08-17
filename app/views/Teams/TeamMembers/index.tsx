@@ -136,14 +136,19 @@ function TeamMembers() {
             (team) => team.sexDisplay,
         ),
         createStringColumn<TeamMembersListItem, string | number>(
+            'email',
+            'Email',
+            (team) => team.email,
+        ),
+        createStringColumn<TeamMembersListItem, string | number>(
+            'position',
+            'Position',
+            (team) => team.position,
+        ),
+        createStringColumn<TeamMembersListItem, string | number>(
             'region',
             'Region/Zone',
             (team) => (isDefined(team.region) ? regionMap[team.region] : '-'),
-        ),
-        createStringColumn<TeamMembersListItem, string | number>(
-            'woreda',
-            'Woreda',
-            (team) => (isDefined(team.woreda) ? woredaMap[team.woreda] : '-'),
         ),
         createStringColumn<TeamMembersListItem, string | number>(
             'phoneNumber',
@@ -154,11 +159,6 @@ function TeamMembers() {
             'training',
             'Training',
             (team) => team.training,
-        ),
-        createStringColumn<TeamMembersListItem, string | number>(
-            'fieldOfStudy',
-            'Field of Study',
-            (team) => team.fieldOfStudy,
         ),
         createElementColumn<TeamMembersListItem, string | number,
             EditDeleteActionsProps>(
