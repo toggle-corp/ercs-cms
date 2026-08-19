@@ -14,9 +14,9 @@
         flex-direction: column;
         background-color: var(--go-ui-color-white);
         gap: var(--go-ui-spacing-md);
-        overflow-y: auto;
         width: 16rem;
         height: 100%;
+        overflow-y: auto;
     }
 
     .right-pane-content {

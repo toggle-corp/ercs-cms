@@ -77,7 +77,6 @@ function TeamMembers() {
     });
 
     const regionMap = useRegionMap(AdminAreaLevel.Region);
-    const woredaMap = useRegionMap(AdminAreaLevel.Woreda);
 
     const [, deleteTeamMember] = useDeleteTeamMemberMutation();
     const [{ fetching, data }, reExecuteQuery] = useTeamMembersQuery({
@@ -174,7 +173,7 @@ function TeamMembers() {
                 }),
                 { columnWidth: 150 },
             ),
-    ], [onDeleteClick, id, regionMap, woredaMap]);
+    ], [onDeleteClick, id, regionMap]);
 
     const handleCreateClick = useCallback(() => {
         if (isDefined(id)) {

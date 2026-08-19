@@ -42,6 +42,7 @@ import NonFieldError from '#components/NonFieldError';
 import {
     type GalleryAlbumCreateInput,
     type GalleryAlbumUpdateInput,
+    type GalleryImageListQuery,
     useCreateGalleryAlbumMutation,
     useCreateGalleryImageMutation,
     useDeleteGalleryImageMutation,
@@ -76,8 +77,10 @@ const GalleryAlbumSchema: FormSchema = {
 
 const defaultEditFormValue: PartialFormType = {};
 
-// Number of images fetched per batch in the edit view.
-const IMAGES_PER_BATCH = 25;
+// Number of images fetched per page in the edit view.
+const IMAGES_PER_PAGE = 25;
+
+type GalleryImage = GalleryImageListQuery['galleryImages']['results'][number];
 
 function getDisplayName(name: string) {
     return name.split('/').pop()?.replace(/\.[^.]+$/, '') ?? name;
@@ -113,10 +116,16 @@ function GalleryForm() {
         variables: { id: (id ?? '') }, pause: !id,
     });
 
-    const [imagesLimit, setImagesLimit] = useState(IMAGES_PER_BATCH);
+    const [imagesOffset, setImagesOffset] = useState(0);
+    const [loadedImages, setLoadedImages] = useState<GalleryImage[]>([]);
+    const [totalImages, setTotalImages] = useState(0);
 
     const [{ data: imagesData, fetching: imagesFetch }] = useGalleryImageListQuery({
-        variables: { filters: { albumId: id ?? '' }, offset: 0, limit: imagesLimit },
+        variables: {
+            filters: { albumId: id ?? '' },
+            offset: imagesOffset,
+            limit: IMAGES_PER_PAGE,
+        },
         pause: !id,
         requestPolicy: 'network-only',
     });
@@ -136,8 +145,19 @@ function GalleryForm() {
         }
     }, [albumDetailFetch, albumData, setValue]);
 
+    const appendedImagesData = useRef<GalleryImageListQuery | undefined>(undefined);
+
+    useEffect(() => {
+        if (imagesFetch || isNotDefined(imagesData) || appendedImagesData.current === imagesData) {
+            return;
+        }
+        appendedImagesData.current = imagesData;
+        setLoadedImages((prevImages) => [...prevImages, ...imagesData.galleryImages.results]);
+        setTotalImages(imagesData.galleryImages.totalCount);
+    }, [imagesData, imagesFetch]);
+
     const existingImages: ExistingImage[] = useMemo(() => (
-        (imagesData?.galleryImages.results ?? [])
+        loadedImages
             .filter((image) => !removedImageIds.includes(image.id))
             .map((image) => ({
                 id: image.id,
@@ -145,30 +165,28 @@ function GalleryForm() {
                 size: image.image.size,
                 url: image.image.url,
             }))
-    ), [imagesData, removedImageIds]);
+    ), [loadedImages, removedImageIds]);
 
-    const hasMoreImages = (
-        (imagesData?.galleryImages.results.length ?? 0)
-        < (imagesData?.galleryImages.totalCount ?? 0)
-    );
+    const loadedImagesCount = loadedImages.length;
+    const hasMoreImages = loadedImagesCount < totalImages;
 
-    const sentinelRef = useRef<HTMLDivElement>(null);
+    const loadMoreRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const sentinel = sentinelRef.current;
-        if (isNotDefined(sentinel) || !hasMoreImages || imagesFetch) {
+        const loadMoreElement = loadMoreRef.current;
+        if (isNotDefined(loadMoreElement) || !hasMoreImages || imagesFetch) {
             return undefined;
         }
         const observer = new IntersectionObserver((entries) => {
             if (entries.some((entry) => entry.isIntersecting)) {
-                setImagesLimit((prevLimit) => prevLimit + IMAGES_PER_BATCH);
+                setImagesOffset(loadedImagesCount);
             }
-        });
-        observer.observe(sentinel);
+        }, { rootMargin: '300px' });
+        observer.observe(loadMoreElement);
         return () => {
             observer.disconnect();
         };
-    }, [hasMoreImages, imagesFetch]);
+    }, [hasMoreImages, imagesFetch, loadedImagesCount]);
 
     const newFilePreviews = useMemo(
         () => newFiles.map((file) => URL.createObjectURL(file)),
@@ -347,7 +365,7 @@ function GalleryForm() {
 
     const error = getErrorObject(formError);
 
-    if (albumDetailFetch || (imagesFetch && isNotDefined(imagesData))) {
+    if (albumDetailFetch || (imagesFetch && loadedImagesCount === 0)) {
         return (
             <BlockLoading
                 withoutBorder
@@ -491,8 +509,8 @@ function GalleryForm() {
                     </ListView>
                     {hasMoreImages && (
                         <div
-                            ref={sentinelRef}
-                            className={styles.loadMoreSentinel}
+                            ref={loadMoreRef}
+                            className={styles.loadMore}
                         >
                             {imagesFetch && (
                                 <BlockLoading
