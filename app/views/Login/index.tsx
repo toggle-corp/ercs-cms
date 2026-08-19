@@ -176,7 +176,7 @@ function Login() {
                                     spacing="2xs"
                                 >
                                     <Heading>
-                                        ERCS EOC
+                                        ERCS CMS
                                     </Heading>
                                     <Description withLightText textSize="sm">
                                         Login with

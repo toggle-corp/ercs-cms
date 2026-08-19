@@ -67,7 +67,7 @@ function Navbar() {
                                 <Heading
                                     level={4}
                                 >
-                                    ERCS EOC
+                                    ERCS CMS
                                 </Heading>
                             </ListView>
                         </Link>
