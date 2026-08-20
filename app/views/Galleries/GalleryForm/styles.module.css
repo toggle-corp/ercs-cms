@@ -11,7 +11,7 @@
     cursor: pointer;
     padding: var(--go-ui-spacing-md);
     width: auto;
-    height: 12rem;
+    height: 10rem;
     text-align: center;
     color: var(--go-ui-color-gray-70);
     gap: var(--go-ui-spacing-2xs);
@@ -39,6 +39,10 @@
 
 .upload-tile .upload-icon {
     font-size: var(--go-ui-font-size-2xl);
+}
+
+.load-more {
+    min-height: 1rem;
 }
 
 .file-item {

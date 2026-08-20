@@ -158,11 +158,6 @@ function PreparednessList() {
             'Region',
             (item) => (isDefined(item.regionId) ? regionMap[item.regionId] : '-'),
         ),
-        createStringColumn<PreparednessListItem, string | number>(
-            'order',
-            'Display Order',
-            (item) => (isDefined(item.order) ? String(item.order) : '-'),
-        ),
         createElementColumn<PreparednessListItem, string | number, { isActive: boolean }>(
             'status',
             'Status',

@@ -4,6 +4,7 @@ import {
     useRef,
     useState,
 } from 'react';
+import { isDefined } from '@togglecorp/fujs';
 
 import { useBulkUpdateExternalDashboardsMutation } from '#generated/types/graphql';
 import useAlert from '#hooks/useAlert';
@@ -22,17 +23,14 @@ export function reorderWithinPage<T extends ReorderItem>(
     page: number,
     limit: number,
 ): T[] {
-    const slots = items.map((item) => item.order).sort((a, b) => a - b);
-
     const moved = [...items];
     const [dragged] = moved.splice(dragIndex, 1);
     moved.splice(dropIndex, 0, dragged);
 
-    return moved.map((item, index) => ({
-        ...item,
-        no: String((page - 1) * limit + index + 1),
-        order: slots[index],
-    }));
+    return moved.map((item, index) => {
+        const position = (page - 1) * limit + index + 1;
+        return { ...item, no: String(position), order: position };
+    });
 }
 
 function useDashboardReorder<T extends ReorderItem>(
@@ -52,6 +50,8 @@ function useDashboardReorder<T extends ReorderItem>(
     }
 
     const dragIndexRef = useRef<number | undefined>(undefined);
+    const [draggingIndex, setDraggingIndex] = useState<number | undefined>(undefined);
+    const [dropTargetIndex, setDropTargetIndex] = useState<number | undefined>(undefined);
 
     const handleRowDrop = useCallback((dropIndex: number) => {
         const dragIndex = dragIndexRef.current;
@@ -94,20 +94,38 @@ function useDashboardReorder<T extends ReorderItem>(
         datum: T;
     }) => {
         const index = tableData.indexOf(datum);
+        const isDropTarget = isDefined(draggingIndex)
+            && dropTargetIndex === index
+            && draggingIndex !== index;
+
         return cloneElement(row, {
-            draggable: true,
-            style: { cursor: 'grab' },
-            onDragStart: () => {
+            onDragStart: (e: React.DragEvent<HTMLElement>) => {
                 dragIndexRef.current = index;
+                setDraggingIndex(index);
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setDragImage(e.currentTarget, 16, 16);
+            },
+            onDragEnd: () => {
+                setDraggingIndex(undefined);
+                setDropTargetIndex(undefined);
             },
             onDragOver: (e: React.DragEvent) => {
                 e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                setDropTargetIndex(index);
             },
             onDrop: () => {
+                setDraggingIndex(undefined);
+                setDropTargetIndex(undefined);
                 handleRowDrop(index);
             },
+            style: {
+                opacity: draggingIndex === index ? 0.4 : undefined,
+                transition: 'opacity 0.15s ease',
+                outline: isDropTarget ? '2px solid var(--go-ui-color-primary-red)' : undefined,
+            },
         } as React.HTMLAttributes<HTMLElement>);
-    }, [tableData, handleRowDrop]);
+    }, [tableData, handleRowDrop, draggingIndex, dropTargetIndex]);
 
     return { tableData, rowModifier };
 }

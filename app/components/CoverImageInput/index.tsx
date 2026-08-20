@@ -76,6 +76,7 @@ function CoverImageInput<N, T>(props: Props<N, T>) {
                 accept={accept}
                 disabled={disabled}
                 styleVariant="outline"
+                colorVariant="primary"
             >
                 {isDefined(preview) ? 'Change cover image' : 'Upload cover image'}
             </RawFileInput>

@@ -160,11 +160,6 @@ function OurWorks() {
             'Region',
             (item) => (isDefined(item.regionId) ? regionMap[item.regionId] : '-'),
         ),
-        createStringColumn<WorksListItem, string | number>(
-            'order',
-            'Display Order',
-            (item) => (isDefined(item.order) ? String(item.order) : '-'),
-        ),
         createElementColumn<WorksListItem, string | number, { isActive: boolean }>(
             'status',
             'Status',

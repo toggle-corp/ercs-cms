@@ -77,7 +77,6 @@ function TeamMembers() {
     });
 
     const regionMap = useRegionMap(AdminAreaLevel.Region);
-    const woredaMap = useRegionMap(AdminAreaLevel.Woreda);
 
     const [, deleteTeamMember] = useDeleteTeamMemberMutation();
     const [{ fetching, data }, reExecuteQuery] = useTeamMembersQuery({
@@ -136,14 +135,19 @@ function TeamMembers() {
             (team) => team.sexDisplay,
         ),
         createStringColumn<TeamMembersListItem, string | number>(
+            'email',
+            'Email',
+            (team) => team.email,
+        ),
+        createStringColumn<TeamMembersListItem, string | number>(
+            'position',
+            'Position',
+            (team) => team.position,
+        ),
+        createStringColumn<TeamMembersListItem, string | number>(
             'region',
             'Region/Zone',
             (team) => (isDefined(team.region) ? regionMap[team.region] : '-'),
-        ),
-        createStringColumn<TeamMembersListItem, string | number>(
-            'woreda',
-            'Woreda',
-            (team) => (isDefined(team.woreda) ? woredaMap[team.woreda] : '-'),
         ),
         createStringColumn<TeamMembersListItem, string | number>(
             'phoneNumber',
@@ -155,11 +159,6 @@ function TeamMembers() {
             'Training',
             (team) => team.training,
         ),
-        createStringColumn<TeamMembersListItem, string | number>(
-            'fieldOfStudy',
-            'Field of Study',
-            (team) => team.fieldOfStudy,
-        ),
         createElementColumn<TeamMembersListItem, string | number,
             EditDeleteActionsProps>(
                 'actions',
@@ -167,14 +166,14 @@ function TeamMembers() {
                 EditDeleteActions,
                 (_, datum) => ({
                     id: id ?? '',
-                    onDelete: () => onDeleteClick(datum.id),
+                    onDelete: onDeleteClick,
                     itemTitle: datum.name,
                     member: datum.id,
                     to: 'editTeamMember',
                 }),
                 { columnWidth: 150 },
             ),
-    ], [onDeleteClick, id, regionMap, woredaMap]);
+    ], [onDeleteClick, id, regionMap]);
 
     const handleCreateClick = useCallback(() => {
         if (isDefined(id)) {

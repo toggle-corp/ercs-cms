@@ -165,11 +165,6 @@ function ResourceDashboards() {
             'Region',
             (item) => (isDefined(item.regionId) ? regionMap[item.regionId] : '-'),
         ),
-        createStringColumn<DashboardListItem, string | number>(
-            'order',
-            'Display Order',
-            (item) => (isDefined(item.order) ? String(item.order) : '-'),
-        ),
         createElementColumn<DashboardListItem, string | number, { isActive: boolean }>(
             'status',
             'Status',

@@ -66,6 +66,7 @@ function FileInput<N, T>(props: Props<N, T>) {
                         accept={accept}
                         disabled={disabled}
                         styleVariant="outline"
+                        colorVariant="primary"
                     >
                         {isDefined(fileName) ? 'Change file' : 'Upload file'}
                     </RawFileInput>

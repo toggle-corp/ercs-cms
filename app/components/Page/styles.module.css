@@ -6,19 +6,22 @@
     height: 100%;
     overflow: hidden;
 
-    >* {
-        width: 100%
-    }
-
     .left-pane {
         display: flex;
+        position: sticky;
+        top: 0;
+        flex: 0 0 16rem;
         flex-direction: column;
         background-color: var(--go-ui-color-white);
         gap: var(--go-ui-spacing-md);
-        width: 20%
+        width: 16rem;
+        height: 100%;
+        overflow-y: auto;
     }
 
     .right-pane-content {
+        flex: 1;
+        min-width: 0;
         overflow: auto;
     }
 }

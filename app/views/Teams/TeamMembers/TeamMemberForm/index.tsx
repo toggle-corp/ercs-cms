@@ -70,7 +70,9 @@ const TeamSchema: FormSchema = {
             required: true,
             defaultValue: '',
         },
-        region: {},
+        region: {
+            required: true,
+        },
         woreda: {},
         training: {},
         fieldOfStudy: {},
@@ -285,6 +287,7 @@ function TeamMemberForm() {
                 <InputSection
                     title="Region"
                     description="Select the region"
+                    withAsteriskOnTitle
                 >
                     <RegionSelectInput
                         name="region"

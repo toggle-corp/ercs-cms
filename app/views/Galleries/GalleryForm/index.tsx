@@ -2,6 +2,7 @@ import {
     useCallback,
     useEffect,
     useMemo,
+    useRef,
     useState,
 } from 'react';
 import { useParams } from 'react-router';
@@ -41,6 +42,7 @@ import NonFieldError from '#components/NonFieldError';
 import {
     type GalleryAlbumCreateInput,
     type GalleryAlbumUpdateInput,
+    type GalleryImageListQuery,
     useCreateGalleryAlbumMutation,
     useCreateGalleryImageMutation,
     useDeleteGalleryImageMutation,
@@ -75,8 +77,10 @@ const GalleryAlbumSchema: FormSchema = {
 
 const defaultEditFormValue: PartialFormType = {};
 
-// Maximum number of images to load for an album in the edit view.
-const MAX_IMAGES = 100;
+// Number of images fetched per page in the edit view.
+const IMAGES_PER_PAGE = 25;
+
+type GalleryImage = GalleryImageListQuery['galleryImages']['results'][number];
 
 function getDisplayName(name: string) {
     return name.split('/').pop()?.replace(/\.[^.]+$/, '') ?? name;
@@ -112,8 +116,16 @@ function GalleryForm() {
         variables: { id: (id ?? '') }, pause: !id,
     });
 
+    const [imagesOffset, setImagesOffset] = useState(0);
+    const [loadedImages, setLoadedImages] = useState<GalleryImage[]>([]);
+    const [totalImages, setTotalImages] = useState(0);
+
     const [{ data: imagesData, fetching: imagesFetch }] = useGalleryImageListQuery({
-        variables: { filters: { albumId: id ?? '' }, offset: 0, limit: MAX_IMAGES },
+        variables: {
+            filters: { albumId: id ?? '' },
+            offset: imagesOffset,
+            limit: IMAGES_PER_PAGE,
+        },
         pause: !id,
         requestPolicy: 'network-only',
     });
@@ -133,8 +145,19 @@ function GalleryForm() {
         }
     }, [albumDetailFetch, albumData, setValue]);
 
+    const appendedImagesData = useRef<GalleryImageListQuery | undefined>(undefined);
+
+    useEffect(() => {
+        if (imagesFetch || isNotDefined(imagesData) || appendedImagesData.current === imagesData) {
+            return;
+        }
+        appendedImagesData.current = imagesData;
+        setLoadedImages((prevImages) => [...prevImages, ...imagesData.galleryImages.results]);
+        setTotalImages(imagesData.galleryImages.totalCount);
+    }, [imagesData, imagesFetch]);
+
     const existingImages: ExistingImage[] = useMemo(() => (
-        (imagesData?.galleryImages.results ?? [])
+        loadedImages
             .filter((image) => !removedImageIds.includes(image.id))
             .map((image) => ({
                 id: image.id,
@@ -142,7 +165,28 @@ function GalleryForm() {
                 size: image.image.size,
                 url: image.image.url,
             }))
-    ), [imagesData, removedImageIds]);
+    ), [loadedImages, removedImageIds]);
+
+    const loadedImagesCount = loadedImages.length;
+    const hasMoreImages = loadedImagesCount < totalImages;
+
+    const loadMoreRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const loadMoreElement = loadMoreRef.current;
+        if (isNotDefined(loadMoreElement) || !hasMoreImages || imagesFetch) {
+            return undefined;
+        }
+        const observer = new IntersectionObserver((entries) => {
+            if (entries.some((entry) => entry.isIntersecting)) {
+                setImagesOffset(loadedImagesCount);
+            }
+        }, { rootMargin: '300px' });
+        observer.observe(loadMoreElement);
+        return () => {
+            observer.disconnect();
+        };
+    }, [hasMoreImages, imagesFetch, loadedImagesCount]);
 
     const newFilePreviews = useMemo(
         () => newFiles.map((file) => URL.createObjectURL(file)),
@@ -321,7 +365,7 @@ function GalleryForm() {
 
     const error = getErrorObject(formError);
 
-    if (albumDetailFetch || imagesFetch) {
+    if (albumDetailFetch || (imagesFetch && loadedImagesCount === 0)) {
         return (
             <BlockLoading
                 withoutBorder
@@ -382,6 +426,25 @@ function GalleryForm() {
                     title="Add Content"
                     description="Upload Images for the event"
                 >
+                    <RawFileInput
+                        name={undefined}
+                        multiple
+                        accept={ACCEPTED_IMAGE_TYPES}
+                        disabled={submitting}
+                        onChange={handleFilesSelect}
+                        className={_cs(
+                            styles.uploadTile,
+                            submitting && styles.disabled,
+                        )}
+                        childrenContainerClassName={styles.uploadTileContent}
+                        styleVariant="action"
+                        withoutPadding
+                    >
+                        <UploadLineIcon className={styles.uploadIcon} />
+                        <Heading level={5}>
+                            Click to upload images
+                        </Heading>
+                    </RawFileInput>
                     <ListView
                         layout="grid"
                         numPreferredGridColumns={5}
@@ -397,7 +460,7 @@ function GalleryForm() {
                                             {getDisplayName(image.name)}
                                         </Heading>
                                     )}
-                                    size="md"
+                                    size="sm"
                                 />
                                 <IconButton
                                     className={styles.removeButton}
@@ -443,26 +506,21 @@ function GalleryForm() {
                                 </IconButton>
                             </div>
                         ))}
-                        <RawFileInput
-                            name={undefined}
-                            multiple
-                            accept={ACCEPTED_IMAGE_TYPES}
-                            disabled={submitting}
-                            onChange={handleFilesSelect}
-                            className={_cs(
-                                styles.uploadTile,
-                                submitting && styles.disabled,
-                            )}
-                            childrenContainerClassName={styles.uploadTileContent}
-                            styleVariant="action"
-                            withoutPadding
-                        >
-                            <UploadLineIcon className={styles.uploadIcon} />
-                            <Heading level={5}>
-                                Click to upload images
-                            </Heading>
-                        </RawFileInput>
                     </ListView>
+                    {hasMoreImages && (
+                        <div
+                            ref={loadMoreRef}
+                            className={styles.loadMore}
+                        >
+                            {imagesFetch && (
+                                <BlockLoading
+                                    withoutBorder
+                                    compact
+                                    message="Loading more images"
+                                />
+                            )}
+                        </div>
+                    )}
                     {fileErrors.map((fileError) => (
                         <InputError key={fileError}>
                             {fileError}
