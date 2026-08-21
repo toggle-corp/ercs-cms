@@ -60,7 +60,7 @@ const FIELDS: FieldSpec[] = [
     { name: 'phoneNumber' },
     { name: 'sex' },
     { name: 'position', required: true },
-    { name: 'region' },
+    { name: 'region', required: true },
     // NOTE: woreda will be supported in the future
     // { name: 'woreda' },
     { name: 'training' },
