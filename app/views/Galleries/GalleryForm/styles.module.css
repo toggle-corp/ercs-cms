@@ -42,6 +42,8 @@
 }
 
 .load-more {
+    display: flex;
+    justify-content: center;
     min-height: 1rem;
 }
 
@@ -52,6 +54,25 @@
 .file-item .image-element {
     border: var(--go-ui-width-separator-sm) solid var(--go-ui-color-separator);
     border-radius: var(--go-ui-border-radius-lg);
+}
+
+.file-item .select-checkbox {
+    position: absolute;
+    top: var(--go-ui-spacing-2xs);
+    left: var(--go-ui-spacing-2xs);
+    transition: opacity 0.2s ease;
+    opacity: 0;
+    z-index: 1;
+    border-radius: var(--go-ui-border-radius-sm);
+    background-color: var(--go-ui-color-foreground);
+    padding: var(--go-ui-spacing-3xs);
+    font-size: var(--go-ui-font-size-sm);
+}
+
+.file-item:hover .select-checkbox,
+.file-item .select-checkbox:focus-within,
+.file-item .select-checkbox.selected {
+    opacity: 1;
 }
 
 .file-item .remove-button {

@@ -13,6 +13,7 @@ import {
 import {
     BlockLoading,
     Button,
+    Checkbox,
     Container,
     Heading,
     IconButton,
@@ -78,12 +79,17 @@ const GalleryAlbumSchema: FormSchema = {
 const defaultEditFormValue: PartialFormType = {};
 
 // Number of images fetched per page in the edit view.
-const IMAGES_PER_PAGE = 25;
+const IMAGES_PER_PAGE = 10;
 
 type GalleryImage = GalleryImageListQuery['galleryImages']['results'][number];
 
 function getDisplayName(name: string) {
     return name.split('/').pop()?.replace(/\.[^.]+$/, '') ?? name;
+}
+
+interface NewImage {
+    file: File;
+    preview: string;
 }
 
 interface ExistingImage {
@@ -98,9 +104,10 @@ function GalleryForm() {
     const navigate = useRouting();
     const alert = useAlert();
 
-    const [newFiles, setNewFiles] = useState<File[]>([]);
+    const [newImages, setNewImages] = useState<NewImage[]>([]);
     const [fileErrors, setFileErrors] = useState<string[]>([]);
     const [removedImageIds, setRemovedImageIds] = useState<string[]>([]);
+    const [selectedImageIds, setSelectedImageIds] = useState<string[]>([]);
     const [submitting, setSubmitting] = useState(false);
 
     const {
@@ -170,32 +177,25 @@ function GalleryForm() {
     const loadedImagesCount = loadedImages.length;
     const hasMoreImages = loadedImagesCount < totalImages;
 
-    const loadMoreRef = useRef<HTMLDivElement>(null);
+    const handleLoadMoreClick = useCallback(() => {
+        setImagesOffset(loadedImagesCount);
+    }, [loadedImagesCount]);
+
+    const topUpLoadedImages = useCallback((remainingCount: number) => {
+        if (!imagesFetch && hasMoreImages && remainingCount < IMAGES_PER_PAGE) {
+            setImagesOffset(loadedImagesCount);
+        }
+    }, [imagesFetch, hasMoreImages, loadedImagesCount]);
+
+    const previewUrlsRef = useRef<string[]>([]);
 
     useEffect(() => {
-        const loadMoreElement = loadMoreRef.current;
-        if (isNotDefined(loadMoreElement) || !hasMoreImages || imagesFetch) {
-            return undefined;
-        }
-        const observer = new IntersectionObserver((entries) => {
-            if (entries.some((entry) => entry.isIntersecting)) {
-                setImagesOffset(loadedImagesCount);
-            }
-        }, { rootMargin: '300px' });
-        observer.observe(loadMoreElement);
-        return () => {
-            observer.disconnect();
-        };
-    }, [hasMoreImages, imagesFetch, loadedImagesCount]);
-
-    const newFilePreviews = useMemo(
-        () => newFiles.map((file) => URL.createObjectURL(file)),
-        [newFiles],
-    );
+        previewUrlsRef.current = newImages.map(({ preview }) => preview);
+    }, [newImages]);
 
     useEffect(() => () => {
-        newFilePreviews.forEach((url) => URL.revokeObjectURL(url));
-    }, [newFilePreviews]);
+        previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    }, []);
 
     const handleFilesSelect = useCallback((files: File[] | undefined) => {
         if (isNotDefined(files) || files.length === 0) {
@@ -211,18 +211,49 @@ function GalleryForm() {
             return true;
         });
         setFileErrors(rejected);
-        if (accepted.length > 0) {
-            setNewFiles((prev) => [...prev, ...accepted]);
+        if (accepted.length === 0) {
+            return;
         }
+        const acceptedWithPreviews = accepted.map((file) => ({
+            file,
+            preview: URL.createObjectURL(file),
+        }));
+        setNewImages((prev) => [...prev, ...acceptedWithPreviews]);
     }, []);
 
     const handleRemoveExistingImage = useCallback((imageId: string) => {
         setRemovedImageIds((prev) => [...prev, imageId]);
+        setSelectedImageIds((prev) => prev.filter((selectedId) => selectedId !== imageId));
+        topUpLoadedImages(existingImages.length - 1);
+    }, [existingImages.length, topUpLoadedImages]);
+
+    const handleRemoveNewImage = useCallback((index: number) => {
+        setNewImages((prev) => {
+            URL.revokeObjectURL(prev[index].preview);
+            return prev.filter((_, imageIndex) => imageIndex !== index);
+        });
     }, []);
 
-    const handleRemoveNewFile = useCallback((index: number) => {
-        setNewFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index));
+    const handleImageSelect = useCallback((selected: boolean, imageId: string) => {
+        setSelectedImageIds((prev) => (
+            selected
+                ? [...prev, imageId]
+                : prev.filter((selectedId) => selectedId !== imageId)
+        ));
     }, []);
+
+    const allImagesSelected = existingImages.length > 0
+        && selectedImageIds.length === existingImages.length;
+
+    const handleSelectAllChange = useCallback((selected: boolean) => {
+        setSelectedImageIds(selected ? existingImages.map((image) => image.id) : []);
+    }, [existingImages]);
+
+    const handleRemoveSelectedClick = useCallback(() => {
+        setRemovedImageIds((prev) => [...prev, ...selectedImageIds]);
+        setSelectedImageIds([]);
+        topUpLoadedImages(existingImages.length - selectedImageIds.length);
+    }, [selectedImageIds, existingImages.length, topUpLoadedImages]);
 
     const handleGalleryImages = useCallback(async (albumId: string) => {
         const deleteResponses = await Promise.all(
@@ -233,7 +264,7 @@ function GalleryForm() {
         );
 
         const uploadResponses = await Promise.all(
-            newFiles.map((file, index) => addImagesToGallery({
+            newImages.map(({ file }, index) => addImagesToGallery({
                 data: {
                     album: albumId,
                     image: file,
@@ -266,7 +297,7 @@ function GalleryForm() {
         deleteImagesFromGallery,
         removedImageIds,
         existingImages,
-        newFiles,
+        newImages,
     ]);
 
     const handleCreateGallery = useCallback(async (formData: PartialFormType) => {
@@ -445,12 +476,43 @@ function GalleryForm() {
                             Click to upload images
                         </Heading>
                     </RawFileInput>
+                    {existingImages.length > 0 && (
+                        <ListView>
+                            <Checkbox
+                                name={undefined}
+                                value={allImagesSelected}
+                                indeterminate={selectedImageIds.length > 0 && !allImagesSelected}
+                                onChange={handleSelectAllChange}
+                                label={`Select all (${selectedImageIds.length}/${existingImages.length})`}
+                                disabled={submitting}
+                            />
+                            <Button
+                                name={undefined}
+                                onClick={handleRemoveSelectedClick}
+                                colorVariant="danger"
+                                disabled={submitting || selectedImageIds.length === 0}
+                            >
+                                Delete selected
+                            </Button>
+                        </ListView>
+                    )}
                     <ListView
                         layout="grid"
                         numPreferredGridColumns={5}
                     >
                         {existingImages.map((image) => (
                             <div className={styles.fileItem} key={image.id}>
+                                <Checkbox
+                                    className={_cs(
+                                        styles.selectCheckbox,
+                                        selectedImageIds.includes(image.id) && styles.selected,
+                                    )}
+                                    name={image.id}
+                                    value={selectedImageIds.includes(image.id)}
+                                    onChange={handleImageSelect}
+                                    disabled={submitting}
+                                    tooltip="Select image"
+                                />
                                 <Image
                                     imgElementClassName={styles.imageElement}
                                     src={image.url}
@@ -460,7 +522,8 @@ function GalleryForm() {
                                             {getDisplayName(image.name)}
                                         </Heading>
                                     )}
-                                    size="sm"
+                                    size="md"
+                                    withContainedFit
                                 />
                                 <IconButton
                                     className={styles.removeButton}
@@ -475,15 +538,14 @@ function GalleryForm() {
                                 </IconButton>
                             </div>
                         ))}
-                        {newFiles.map((file, index) => (
+                        {newImages.map(({ file, preview }, index) => (
                             <div
-                                // eslint-disable-next-line react/no-array-index-key
-                                key={`${file.name}-${index}`}
+                                key={preview}
                                 className={styles.fileItem}
                             >
                                 <Image
                                     imgElementClassName={styles.imageElement}
-                                    src={newFilePreviews[index]}
+                                    src={preview}
                                     alt={file.name}
                                     caption={(
                                         <Heading level={6} ellipsize>
@@ -498,7 +560,7 @@ function GalleryForm() {
                                     name={index}
                                     title="Remove image"
                                     ariaLabel="Remove image"
-                                    onClick={handleRemoveNewFile}
+                                    onClick={handleRemoveNewImage}
                                     variant="secondary"
                                     disabled={submitting}
                                 >
@@ -508,17 +570,14 @@ function GalleryForm() {
                         ))}
                     </ListView>
                     {hasMoreImages && (
-                        <div
-                            ref={loadMoreRef}
-                            className={styles.loadMore}
-                        >
-                            {imagesFetch && (
-                                <BlockLoading
-                                    withoutBorder
-                                    compact
-                                    message="Loading more images"
-                                />
-                            )}
+                        <div className={styles.loadMore}>
+                            <Button
+                                name={undefined}
+                                onClick={handleLoadMoreClick}
+                                disabled={imagesFetch || submitting}
+                            >
+                                {imagesFetch ? 'Loading' : 'Show more'}
+                            </Button>
                         </div>
                     )}
                     {fileErrors.map((fileError) => (
