@@ -193,7 +193,9 @@ function LinkForm() {
     return (
         <Container
             heading={id ? 'Edit Link' : 'Create New Link'}
-            headerDescription="Create a new internal or external links to add on public facing resources"
+            headerDescription={id
+                ? 'Manage and update links to add on public facing resources'
+                : 'Create a new internal or external link to add on public facing resources'}
             withPadding
             footerActions={(
                 <ListView>

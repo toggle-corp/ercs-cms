@@ -409,7 +409,9 @@ function GalleryForm() {
     return (
         <Container
             heading={id ? 'Edit Gallery' : 'Create New Galleries'}
-            headerDescription="Build a new gallery by adding images and relevant details to showcase visual content in a clear and organized manner"
+            headerDescription={id
+                ? 'Manage and update the gallery images and details'
+                : 'Build a new gallery by adding images and relevant details to showcase visual content in a clear and organized manner'}
             withPadding
             footerActions={(
                 <ListView>

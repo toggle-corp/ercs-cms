@@ -1,11 +1,15 @@
-import { useCallback } from 'react';
+import {
+    useCallback,
+    useState,
+} from 'react';
 import {
     DeleteBinLineIcon,
     EditTwoLineIcon,
 } from '@ifrc-go/icons';
 import {
     Button,
-    ConfirmButton,
+    ListView,
+    Modal,
     TableActions,
 } from '@ifrc-go/ui';
 import { isDefined } from '@togglecorp/fujs';
@@ -33,6 +37,10 @@ function EditDeleteActions(props: Props) {
 
     const navigate = useRouting();
 
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+    const deleteId = dashboard ?? member ?? id;
+
     const handleEditClick = useCallback(() => {
         if (isDefined(dashboard)) {
             navigate(to, { id, dashboard });
@@ -42,6 +50,19 @@ function EditDeleteActions(props: Props) {
             navigate(to, { id });
         }
     }, [navigate, to, id, member, dashboard]);
+
+    const handleDeleteClick = useCallback(() => {
+        setShowDeleteModal(true);
+    }, []);
+
+    const handleDeleteCancel = useCallback(() => {
+        setShowDeleteModal(false);
+    }, []);
+
+    const handleDeleteConfirm = useCallback(() => {
+        setShowDeleteModal(false);
+        onDelete(deleteId);
+    }, [onDelete, deleteId]);
 
     return (
         <TableActions>
@@ -53,15 +74,41 @@ function EditDeleteActions(props: Props) {
             >
                 <EditTwoLineIcon />
             </Button>
-            <ConfirmButton
-                name={dashboard ?? member ?? id}
-                onConfirm={onDelete}
-                confirmMessage={`Are you sure you want to delete ${`"${itemTitle}"` || 'this item'}? This action cannot be undone.`}
+            <Button
+                name={undefined}
+                onClick={handleDeleteClick}
                 title="Delete"
                 styleVariant="action"
             >
                 <DeleteBinLineIcon />
-            </ConfirmButton>
+            </Button>
+            {showDeleteModal && (
+                <Modal
+                    heading="Delete item?"
+                    size="sm"
+                    onClose={handleDeleteCancel}
+                    closeOnEscape
+                    footerActions={(
+                        <ListView spacing="sm">
+                            <Button
+                                name={undefined}
+                                onClick={handleDeleteCancel}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                name={undefined}
+                                styleVariant="filled"
+                                onClick={handleDeleteConfirm}
+                            >
+                                Delete
+                            </Button>
+                        </ListView>
+                    )}
+                >
+                    {`Are you sure you want to delete "${itemTitle || 'this item'}"? This action cannot be undone.`}
+                </Modal>
+            )}
         </TableActions>
     );
 }
