@@ -154,7 +154,9 @@ function TeamForm() {
     return (
         <Container
             heading={id ? 'Edit Team' : 'Create New Team'}
-            headerDescription="Create a team for delivering impactful solution"
+            headerDescription={id
+                ? 'Manage and update team for delivering impactful solution'
+                : 'Create a team for delivering impactful solution'}
             withPadding
             footerActions={(
                 <ListView>

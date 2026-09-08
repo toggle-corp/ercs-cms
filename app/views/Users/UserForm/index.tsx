@@ -187,7 +187,9 @@ function UserForm() {
     return (
         <Container
             heading={isDefined(id) ? 'Edit User' : 'Create New User'}
-            headerDescription={isDefined(id) ? 'Update user information' : 'Create a new user account for accessing the system'}
+            headerDescription={isDefined(id)
+                ? 'Manage and update user information'
+                : 'Create a new user account for accessing the system'}
             withPadding
             footerActions={(
                 <ListView>
