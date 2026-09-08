@@ -88,6 +88,8 @@ function RootContent() {
         dashboardPage: globalEnumsData?.enums.DashboardPage,
         reportContentType: globalEnumsData?.enums.ReportContentType,
         reportVisibility: globalEnumsData?.enums.ReportVisibility,
+        pmerReportCategory: globalEnumsData?.enums.PmerReportCategory,
+        pmerReportDocumentType: globalEnumsData?.enums.PmerReportDocumentType,
     }), [globalEnumsData]);
 
     return (

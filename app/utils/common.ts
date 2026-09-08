@@ -64,6 +64,7 @@ export function getReadableFileSize(bytes: number | null | undefined): string {
 }
 
 export const ACCEPTED_REPORT_FILE_TYPES = '.pdf,.doc,.docx,.png,.jpg,.jpeg';
+export const ACCEPTED_PMER_FILE_TYPES = '.docx,.pdf,.xls,.xlsx,.csv,.png';
 export const ACCEPTED_IMAGE_TYPES = 'image/*';
 export const ACCEPTED_IMPORT_FILE_TYPES = '.xlsx,.xlsm';
 export const MAX_REPORT_FILE_SIZE = 5 * 1024 * 1024; // 5MB

@@ -83,6 +83,11 @@ function PrivateLayout() {
                     icon: <DocumentPdfLineIcon />,
                 },
                 {
+                    title: 'PMER',
+                    to: 'pmer',
+                    icon: <DocumentPdfLineIcon />,
+                },
+                {
                     title: 'Online Interactive',
                     to: 'onlineInteractive',
                     icon: <ImStrategyIcon />,
