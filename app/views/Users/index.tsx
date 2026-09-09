@@ -136,7 +136,7 @@ function UsersList() {
                 const result = resp.data?.deleteUser;
                 if (result?.ok) {
                     reExecuteQuery();
-                    alert.show('User deleted successfully', { variant: 'success' });
+                    alert.show('User deactivated successfully', { variant: 'success' });
                 } else {
                     alert.show(errorMessage, { variant: 'danger' });
                 }
@@ -204,6 +204,7 @@ function UsersList() {
                     onDelete: onDeleteClick,
                     itemTitle: datum.fullName,
                     to: 'editUser',
+                    deleteMode: 'deactivate',
                 }),
                 { columnWidth: 150 },
             ),

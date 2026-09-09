@@ -188,6 +188,22 @@ const editDocument: RouteConfig = {
     load: () => import('#views/Documents/DocumentsForm'),
     visibility: 'is-authenticated',
 };
+const pmer: RouteConfig = {
+    index: true,
+    path: '/pmer',
+    load: () => import('#views/Pmer'),
+    visibility: 'is-authenticated',
+};
+const createPmer: RouteConfig = {
+    path: '/pmer/new',
+    load: () => import('#views/Pmer/PmerForm'),
+    visibility: 'is-authenticated',
+};
+const editPmer: RouteConfig = {
+    path: '/pmer/:id/edit',
+    load: () => import('#views/Pmer/PmerForm'),
+    visibility: 'is-authenticated',
+};
 const onlineInteractive: RouteConfig = {
     index: true,
     path: '/online-interactive',
@@ -274,6 +290,9 @@ const routes = {
     documents,
     createDocument,
     editDocument,
+    pmer,
+    createPmer,
+    editPmer,
     onlineInteractive,
     createOnlineInteractive,
     editOnlineInteractive,

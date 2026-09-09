@@ -132,6 +132,7 @@ function CategoryModal(props: Props) {
 
     const [categoryName, setCategoryName] = useState<string | undefined>();
     const [editingId, setEditingId] = useState<string | undefined>();
+    const [deletingId, setDeletingId] = useState<string | undefined>();
 
     const [{ fetching, data, error }, reExecuteQuery] = useThematicAreasQuery({
         variables: {
@@ -201,13 +202,25 @@ function CategoryModal(props: Props) {
         setCategoryName(undefined);
     }, []);
 
-    const handleDelete = useCallback((id: string) => {
-        deleteThematicArea({ id }).then((resp) => {
+    const handleDeleteClick = useCallback((id: string) => {
+        setDeletingId(id);
+    }, []);
+
+    const handleDeleteCancel = useCallback(() => {
+        setDeletingId(undefined);
+    }, []);
+
+    const handleDeleteConfirm = useCallback(() => {
+        if (isNotDefined(deletingId)) {
+            return;
+        }
+        setDeletingId(undefined);
+        deleteThematicArea({ id: deletingId }).then((resp) => {
             handleResult(resp.data?.deleteThematicArea, 'Category deleted successfully');
         }).catch(() => {
             alert.show(errorMessage, { variant: 'danger' });
         });
-    }, [deleteThematicArea, handleResult, alert]);
+    }, [deletingId, deleteThematicArea, handleResult, alert]);
 
     const columns = useMemo(() => [
         createStringColumn<ThematicArea, string | number>(
@@ -222,12 +235,12 @@ function CategoryModal(props: Props) {
             (_, datum) => ({
                 id: datum.id,
                 onEdit: handleEdit,
-                onDelete: handleDelete,
+                onDelete: handleDeleteClick,
                 disabled: actionPending,
             }),
             { columnWidth: 100 },
         ),
-    ], [handleEdit, handleDelete, actionPending]);
+    ], [handleEdit, handleDeleteClick, actionPending]);
 
     const isEditing = isDefined(editingId);
 
@@ -292,6 +305,33 @@ function CategoryModal(props: Props) {
                     onActivePageChange={setPage}
                 />
             </ListView>
+            {isDefined(deletingId) && (
+                <Modal
+                    heading="Delete category?"
+                    size="sm"
+                    onClose={handleDeleteCancel}
+                    closeOnEscape
+                    footerActions={(
+                        <ListView spacing="sm">
+                            <Button
+                                name={undefined}
+                                onClick={handleDeleteCancel}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                name={undefined}
+                                styleVariant="filled"
+                                onClick={handleDeleteConfirm}
+                            >
+                                Delete
+                            </Button>
+                        </ListView>
+                    )}
+                >
+                    {`Are you sure you want to delete "${categories?.find((item) => item.id === deletingId)?.name || 'this category'}"? This action cannot be undone.`}
+                </Modal>
+            )}
         </Modal>
     );
 }

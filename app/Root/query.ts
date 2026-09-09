@@ -32,6 +32,14 @@ export const GLOBAL_ENUMS = gql`
                 key
                 label
             }
+            PmerReportCategory {
+                key
+                label
+            }
+            PmerReportDocumentType {
+                key
+                label
+            }
         }
     }
 `;

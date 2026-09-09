@@ -23,7 +23,21 @@ export interface Props {
     onDelete: (id: string) => void;
     itemTitle: string;
     to: keyof RoutesMap;
+    deleteMode?: 'delete' | 'deactivate';
 }
+
+const deleteCopy = {
+    delete: {
+        actionLabel: 'Delete',
+        heading: 'Delete item?',
+        message: (title: string) => `Are you sure you want to delete "${title}"? This action cannot be undone.`,
+    },
+    deactivate: {
+        actionLabel: 'Deactivate',
+        heading: 'Deactivate user?',
+        message: (title: string) => `Are you sure you want to deactivate "${title}"? They will lose access, and you can reactivate them later.`,
+    },
+};
 
 function EditDeleteActions(props: Props) {
     const {
@@ -33,7 +47,10 @@ function EditDeleteActions(props: Props) {
         to,
         member,
         dashboard,
+        deleteMode = 'delete',
     } = props;
+
+    const copy = deleteCopy[deleteMode];
 
     const navigate = useRouting();
 
@@ -77,14 +94,14 @@ function EditDeleteActions(props: Props) {
             <Button
                 name={undefined}
                 onClick={handleDeleteClick}
-                title="Delete"
+                title={copy.actionLabel}
                 styleVariant="action"
             >
                 <DeleteBinLineIcon />
             </Button>
             {showDeleteModal && (
                 <Modal
-                    heading="Delete item?"
+                    heading={copy.heading}
                     size="sm"
                     onClose={handleDeleteCancel}
                     closeOnEscape
@@ -101,12 +118,12 @@ function EditDeleteActions(props: Props) {
                                 styleVariant="filled"
                                 onClick={handleDeleteConfirm}
                             >
-                                Delete
+                                {copy.actionLabel}
                             </Button>
                         </ListView>
                     )}
                 >
-                    {`Are you sure you want to delete "${itemTitle || 'this item'}"? This action cannot be undone.`}
+                    {copy.message(itemTitle || 'this item')}
                 </Modal>
             )}
         </TableActions>

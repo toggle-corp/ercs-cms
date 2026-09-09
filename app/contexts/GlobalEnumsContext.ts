@@ -3,6 +3,8 @@ import { createContext } from 'react';
 import type {
     AppEnumCollectionDashboardPage,
     AppEnumCollectionLinkType,
+    AppEnumCollectionPmerReportCategory,
+    AppEnumCollectionPmerReportDocumentType,
     AppEnumCollectionReportContentType,
     AppEnumCollectionReportType,
     AppEnumCollectionReportVisibility,
@@ -18,6 +20,8 @@ export interface GlobalEnumsContextInterface {
     dashboardPage: AppEnumCollectionDashboardPage[] | undefined;
     reportContentType: AppEnumCollectionReportContentType[] | undefined;
     reportVisibility: AppEnumCollectionReportVisibility[] | undefined;
+    pmerReportCategory: AppEnumCollectionPmerReportCategory[] | undefined;
+    pmerReportDocumentType: AppEnumCollectionPmerReportDocumentType[] | undefined;
 }
 
 const GlobalEnumsContext = createContext<GlobalEnumsContextInterface>({
@@ -28,6 +32,8 @@ const GlobalEnumsContext = createContext<GlobalEnumsContextInterface>({
     dashboardPage: undefined,
     reportContentType: undefined,
     reportVisibility: undefined,
+    pmerReportCategory: undefined,
+    pmerReportDocumentType: undefined,
 });
 
 export default GlobalEnumsContext;
