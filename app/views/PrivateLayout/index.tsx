@@ -7,6 +7,7 @@ import {
     ArtboardLineIcon,
     DashboardLineIcon,
     DocumentPdfLineIcon,
+    DrefTwoIcon,
     FocusTwoLineIcon,
     ImStrategyIcon,
     LeadershipIcon,
@@ -68,6 +69,11 @@ function PrivateLayout() {
                     icon: <FocusTwoLineIcon />,
                 },
                 {
+                    title: 'PMER',
+                    to: 'pmer',
+                    icon: <DrefTwoIcon />,
+                },
+                {
                     title: 'Capacity and Resources',
                     to: 'capacityAndResources',
                     icon: <ArtboardLineIcon />,
@@ -80,11 +86,6 @@ function PrivateLayout() {
                 {
                     title: 'Documents',
                     to: 'documents',
-                    icon: <DocumentPdfLineIcon />,
-                },
-                {
-                    title: 'PMER',
-                    to: 'pmer',
                     icon: <DocumentPdfLineIcon />,
                 },
                 {
