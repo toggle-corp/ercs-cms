@@ -34,7 +34,7 @@ function PmerFilters({
         <>
             <TextInput
                 name="search"
-                placeholder="Search by title"
+                placeholder="Search by title, project and department"
                 value={value.search}
                 onChange={onChange}
             />

@@ -72,7 +72,7 @@ function Pmer() {
             offset,
         },
         filters: {
-            title: filter.search ? { iContains: filter.search } : undefined,
+            search: filter.search || undefined,
             regionId: filter.region || undefined,
             category: filter.category || undefined,
             reportType: filter.reportType || undefined,
