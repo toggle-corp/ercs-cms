@@ -41,6 +41,7 @@ import useUrlSearchState from '#hooks/useUrlSearchState';
 import routes from '#root/config/routes';
 import {
     errorMessage,
+    getErrorMessage,
     idSelector,
 } from '#utils/common';
 
@@ -116,7 +117,7 @@ function Links() {
                     reExecuteQuery();
                     alert.show('Link deleted successfully', { variant: 'success' });
                 } else {
-                    alert.show(errorMessage, { variant: 'danger' });
+                    alert.show(getErrorMessage(resp.error), { variant: 'danger' });
                 }
             }).catch(() => {
                 alert.show(errorMessage, { variant: 'danger' });

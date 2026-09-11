@@ -3,6 +3,7 @@ import {
     isNotDefined,
 } from '@togglecorp/fujs';
 import { nonFieldError } from '@togglecorp/toggle-form';
+import type { CombinedError } from 'urql';
 
 import type { AdminAreaLevel } from '#generated/types/graphql';
 
@@ -48,6 +49,10 @@ export const statusFilterOptions = [
 ];
 
 export const errorMessage = 'Something went wrong. Please try again. ';
+
+export function getErrorMessage(error: CombinedError | undefined) {
+    return error?.graphQLErrors?.[0]?.message || errorMessage;
+}
 
 export function getReadableFileSize(bytes: number | null | undefined): string {
     if (!bytes || bytes <= 0) {

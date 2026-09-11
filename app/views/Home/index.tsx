@@ -36,6 +36,7 @@ import useAlert from '#hooks/useAlert';
 import useFilterState from '#hooks/useFilterState';
 import {
     errorMessage,
+    getErrorMessage,
     idSelector,
     keySelector,
     labelSelector,
@@ -128,7 +129,7 @@ function Home() {
                 reExecuteQuickLinksQuery();
                 alert.show('Added to quick links', { variant: 'success' });
             } else {
-                alert.show(errorMessage, { variant: 'danger' });
+                alert.show(getErrorMessage(resp.error), { variant: 'danger' });
             }
         }).catch(() => {
             alert.show(errorMessage, { variant: 'danger' });
@@ -155,7 +156,7 @@ function Home() {
                 reExecuteQuickLinksQuery();
                 alert.show('Removed from quick links', { variant: 'success' });
             } else {
-                alert.show(errorMessage, { variant: 'danger' });
+                alert.show(getErrorMessage(resp.error), { variant: 'danger' });
             }
         }).catch(() => {
             alert.show(errorMessage, { variant: 'danger' });
