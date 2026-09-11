@@ -29,6 +29,7 @@ import useFilterState from '#hooks/useFilterState';
 import useRouting from '#hooks/useRouting';
 import {
     errorMessage,
+    getErrorMessage,
     idSelector,
 } from '#utils/common';
 
@@ -97,7 +98,7 @@ function Teams() {
                     reExecuteQuery();
                     alert.show('Team deleted successfully', { variant: 'success' });
                 } else {
-                    alert.show(errorMessage, { variant: 'danger' });
+                    alert.show(getErrorMessage(resp.error), { variant: 'danger' });
                 }
             }).catch(() => {
                 alert.show(errorMessage, { variant: 'danger' });

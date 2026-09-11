@@ -1,4 +1,5 @@
 import {
+    type ReactNode,
     useCallback,
     useState,
 } from 'react';
@@ -24,6 +25,8 @@ export interface Props {
     itemTitle: string;
     to: keyof RoutesMap;
     deleteMode?: 'delete' | 'deactivate';
+    deleteHeading?: string;
+    deleteMessage?: ReactNode;
 }
 
 const deleteCopy = {
@@ -48,6 +51,8 @@ function EditDeleteActions(props: Props) {
         member,
         dashboard,
         deleteMode = 'delete',
+        deleteHeading,
+        deleteMessage,
     } = props;
 
     const copy = deleteCopy[deleteMode];
@@ -101,7 +106,7 @@ function EditDeleteActions(props: Props) {
             </Button>
             {showDeleteModal && (
                 <Modal
-                    heading={copy.heading}
+                    heading={deleteHeading ?? copy.heading}
                     size="sm"
                     onClose={handleDeleteCancel}
                     closeOnEscape
@@ -123,7 +128,7 @@ function EditDeleteActions(props: Props) {
                         </ListView>
                     )}
                 >
-                    {copy.message(itemTitle || 'this item')}
+                    {deleteMessage ?? copy.message(itemTitle || 'this item')}
                 </Modal>
             )}
         </TableActions>

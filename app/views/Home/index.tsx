@@ -1,11 +1,13 @@
 import {
     useCallback,
     useMemo,
+    useState,
 } from 'react';
 import {
     Button,
-    ConfirmButton,
     Container,
+    ListView,
+    Modal,
     Pager,
     SelectInput,
     Table,
@@ -16,6 +18,10 @@ import {
     createNumberColumn,
     createStringColumn,
 } from '@ifrc-go/ui/utils';
+import {
+    isDefined,
+    isNotDefined,
+} from '@togglecorp/fujs';
 
 import {
     type HomeExternalDashboardsQuery,
@@ -30,6 +36,7 @@ import useAlert from '#hooks/useAlert';
 import useFilterState from '#hooks/useFilterState';
 import {
     errorMessage,
+    getErrorMessage,
     idSelector,
     keySelector,
     labelSelector,
@@ -61,6 +68,8 @@ function Home() {
     });
 
     const alert = useAlert();
+
+    const [removingId, setRemovingId] = useState<string | undefined>();
 
     const [, updateDashboard] = useHomeUpdateExternalDashboardMutation();
 
@@ -120,27 +129,39 @@ function Home() {
                 reExecuteQuickLinksQuery();
                 alert.show('Added to quick links', { variant: 'success' });
             } else {
-                alert.show(errorMessage, { variant: 'danger' });
+                alert.show(getErrorMessage(resp.error), { variant: 'danger' });
             }
         }).catch(() => {
             alert.show(errorMessage, { variant: 'danger' });
         });
     }, [updateDashboard, reExecuteMainQuery, reExecuteQuickLinksQuery, alert]);
 
-    const handleRemoveFromQuickLinks = useCallback((id: string) => {
-        updateDashboard({ id, data: { showOnHome: false } }).then((resp) => {
+    const handleRemoveClick = useCallback((id: string) => {
+        setRemovingId(id);
+    }, []);
+
+    const handleRemoveCancel = useCallback(() => {
+        setRemovingId(undefined);
+    }, []);
+
+    const handleRemoveConfirm = useCallback(() => {
+        if (isNotDefined(removingId)) {
+            return;
+        }
+        setRemovingId(undefined);
+        updateDashboard({ id: removingId, data: { showOnHome: false } }).then((resp) => {
             const result = resp.data?.updateExternalDashboard;
             if (result?.ok) {
                 reExecuteMainQuery();
                 reExecuteQuickLinksQuery();
                 alert.show('Removed from quick links', { variant: 'success' });
             } else {
-                alert.show(errorMessage, { variant: 'danger' });
+                alert.show(getErrorMessage(resp.error), { variant: 'danger' });
             }
         }).catch(() => {
             alert.show(errorMessage, { variant: 'danger' });
         });
-    }, [updateDashboard, reExecuteMainQuery, reExecuteQuickLinksQuery, alert]);
+    }, [removingId, updateDashboard, reExecuteMainQuery, reExecuteQuickLinksQuery, alert]);
 
     const quickLinksColumns = useMemo(() => [
         createNumberColumn<QuickLinksListItem, string | number>(
@@ -162,17 +183,17 @@ function Home() {
             'action',
             (item) => ({
                 children: (
-                    <ConfirmButton
+                    <Button
                         name={item.id}
-                        onConfirm={handleRemoveFromQuickLinks}
+                        onClick={handleRemoveClick}
                         styleVariant="action"
                     >
                         Remove
-                    </ConfirmButton>
+                    </Button>
                 ),
             }),
         ),
-    ], [handleRemoveFromQuickLinks]);
+    ], [handleRemoveClick]);
 
     const columns = useMemo(() => [
         createNumberColumn<HomeListItem, string | number>(
@@ -277,6 +298,33 @@ function Home() {
                     pending={dashboardsPending || pageOptionsPending}
                 />
             </Container>
+            {isDefined(removingId) && (
+                <Modal
+                    heading="Remove from quick links?"
+                    size="sm"
+                    onClose={handleRemoveCancel}
+                    closeOnEscape
+                    footerActions={(
+                        <ListView spacing="sm">
+                            <Button
+                                name={undefined}
+                                onClick={handleRemoveCancel}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                name={undefined}
+                                styleVariant="filled"
+                                onClick={handleRemoveConfirm}
+                            >
+                                Remove
+                            </Button>
+                        </ListView>
+                    )}
+                >
+                    {`Are you sure you want to remove "${quickLinksResults?.find((item) => item.id === removingId)?.title || 'this dashboard'}" from quick links?`}
+                </Modal>
+            )}
         </Container>
     );
 }

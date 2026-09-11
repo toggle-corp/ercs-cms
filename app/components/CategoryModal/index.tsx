@@ -329,7 +329,7 @@ function CategoryModal(props: Props) {
                         </ListView>
                     )}
                 >
-                    {`Are you sure you want to delete "${categories?.find((item) => item.id === deletingId)?.name || 'this category'}"? This action cannot be undone.`}
+                    {`Deleting "${categories?.find((item) => item.id === deletingId)?.name || 'this category'}" will also delete every report that uses it. This action cannot be undone. Are you sure?`}
                 </Modal>
             )}
         </Modal>

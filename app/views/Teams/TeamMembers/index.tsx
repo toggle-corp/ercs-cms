@@ -38,6 +38,7 @@ import useRegionMap from '#hooks/useRegionMap';
 import useRouting from '#hooks/useRouting';
 import {
     errorMessage,
+    getErrorMessage,
     idSelector,
 } from '#utils/common';
 
@@ -110,7 +111,7 @@ function TeamMembers() {
                     reExecuteQuery();
                     alert.show('Team member deleted successfully', { variant: 'success' });
                 } else {
-                    alert.show(errorMessage, { variant: 'danger' });
+                    alert.show(getErrorMessage(resp.error), { variant: 'danger' });
                 }
             }).catch(() => {
                 alert.show(errorMessage, { variant: 'danger' });

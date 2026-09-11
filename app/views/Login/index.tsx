@@ -97,7 +97,7 @@ function Login() {
             });
 
             if (apiError) {
-                alert.show('Incorrect username/password', {
+                alert.show('Incorrect email/password', {
                     variant: 'danger',
                 });
                 return;
@@ -190,7 +190,7 @@ function Login() {
                             >
                                 <TextInput
                                     name="email"
-                                    label="Email/Username"
+                                    label="Email"
                                     value={value.email}
                                     onChange={setFieldValue}
                                     error={error?.email}
