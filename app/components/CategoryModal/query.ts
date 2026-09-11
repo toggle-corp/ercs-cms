@@ -48,13 +48,8 @@ const UPDATE_THEMATIC_AREA = gql`
 const DELETE_THEMATIC_AREA = gql`
     mutation DeleteThematicArea($id: ID!) {
         deleteThematicArea(id: $id) {
-            ... on ThematicAreaTypeMutationResponseType {
-                errors
-                ok
-                result {
-                    id
-                }
-            }
+            errors
+            ok
         }
     }
 `;

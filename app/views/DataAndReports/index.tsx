@@ -38,6 +38,7 @@ import useRegionMap from '#hooks/useRegionMap';
 import useRouting from '#hooks/useRouting';
 import {
     errorMessage,
+    getErrorMessage,
     idSelector,
 } from '#utils/common';
 
@@ -121,7 +122,10 @@ function DataAndReports() {
                     reExecuteQuery();
                     alert.show('Report deleted successfully', { variant: 'success' });
                 } else {
-                    alert.show(errorMessage, { variant: 'danger' });
+                    alert.show(
+                        getErrorMessage(resp.error, result?.errors),
+                        { variant: 'danger' },
+                    );
                 }
             }).catch(() => {
                 alert.show(errorMessage, { variant: 'danger' });

@@ -26,6 +26,7 @@ import {
     isDefined,
     isNotDefined,
 } from '@togglecorp/fujs';
+import type { CombinedError } from 'urql';
 
 import {
     type ThematicAreasQuery,
@@ -38,8 +39,9 @@ import useAlert from '#hooks/useAlert';
 import useFilterState from '#hooks/useFilterState';
 import {
     errorMessage,
+    getErrorMessage,
     idSelector,
-    transformToFormError,
+    type ServerError,
 } from '#utils/common';
 
 type ThematicArea = NonNullable<NonNullable<ThematicAreasQuery['thematicAreas']>['results'][number]>;
@@ -150,15 +152,13 @@ function CategoryModal(props: Props) {
     const handleResult = useCallback((
         result: { ok?: boolean | null; errors?: unknown } | null | undefined,
         successMessage: string,
+        mutationError?: CombinedError,
     ) => {
         if (!result?.ok) {
-            const serverErrors = isDefined(result?.errors)
-                ? transformToFormError(result?.errors as Parameters<typeof transformToFormError>[0])
-                : undefined;
-            const messages = serverErrors
-                ? Object.values(serverErrors).filter(isDefined).join(' ')
-                : undefined;
-            alert.show(messages || errorMessage, { variant: 'danger' });
+            alert.show(
+                getErrorMessage(mutationError, result?.errors as ServerError[] | null),
+                { variant: 'danger' },
+            );
             return;
         }
         setCategoryName(undefined);
@@ -216,7 +216,7 @@ function CategoryModal(props: Props) {
         }
         setDeletingId(undefined);
         deleteThematicArea({ id: deletingId }).then((resp) => {
-            handleResult(resp.data?.deleteThematicArea, 'Category deleted successfully');
+            handleResult(resp.data?.deleteThematicArea, 'Category deleted successfully', resp.error);
         }).catch(() => {
             alert.show(errorMessage, { variant: 'danger' });
         });

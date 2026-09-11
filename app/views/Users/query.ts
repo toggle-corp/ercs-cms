@@ -86,13 +86,8 @@ const UPDATE_USER_MUTATION = gql`
 const DELETE_USER = gql`
     mutation DeleteUser($id: ID!) {
         deleteUser(id: $id) {
-            ... on UserTypeMutationResponseType {
-                errors
-                ok
-                result {
-                    id
-                }
-            }
+            errors
+            ok
         }
     }
 `;

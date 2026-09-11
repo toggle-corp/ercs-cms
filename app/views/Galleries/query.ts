@@ -86,10 +86,8 @@ const CREATE_GALLERY_IMAGE = gql`
 const DELETE_GALLERY_IMAGE = gql`
     mutation DeleteGalleryImage($id: ID!) {
         deleteGalleryImage(id: $id) {
-            ... on GalleryImageTypeMutationResponseType {
-                errors
-                ok
-            }
+            errors
+            ok
         }
     }
 `;
@@ -122,14 +120,8 @@ const UPDATE_GALLERY_ALBUM = gql`
 const DELETE_GALLERY_ALBUM = gql`
     mutation DeleteGalleryAlbum($id: ID!) {
         deleteGalleryAlbum(id: $id) {
-            ... on GalleryAlbumTypeMutationResponseType {
-                errors
-                ok
-                result {
-                    id
-                    title
-                }
-            }
+            errors
+            ok
         }
     }
 `;

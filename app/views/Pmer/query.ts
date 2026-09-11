@@ -78,13 +78,8 @@ const UPDATE_PMER_REPORT = gql`
 const DELETE_PMER_REPORT = gql`
     mutation DeletePmerReport($id: ID!) {
         deletePmerReport(id: $id) {
-            ... on PmerReportTypeMutationResponseType {
-                errors
-                ok
-                result {
-                    id
-                }
-            }
+            errors
+            ok
         }
     }
 `;

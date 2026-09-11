@@ -63,14 +63,8 @@ const LINK_DETAILS = gql`
 const DELETE_LINK = gql`
     mutation DeleteLink($id: ID!) {
         deleteLink(id: $id) {
-            ... on LinkTypeMutationResponseType {
-                errors
-                ok
-                result {
-                    id
-                    title
-                }
-            }
+            errors
+            ok
         }
     }
 `;

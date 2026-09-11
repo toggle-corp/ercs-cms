@@ -1,4 +1,5 @@
 import {
+    isDefined,
     isFalsyString,
     isNotDefined,
 } from '@togglecorp/fujs';
@@ -50,8 +51,17 @@ export const statusFilterOptions = [
 
 export const errorMessage = 'Something went wrong. Please try again. ';
 
-export function getErrorMessage(error: CombinedError | undefined) {
-    return error?.graphQLErrors?.[0]?.message || errorMessage;
+// Mutations report failures on the payload's `errors`, not on the top-level GraphQL
+// errors, so prefer those messages and fall back to the transport error.
+export function getErrorMessage(
+    error: CombinedError | undefined,
+    serverErrors?: ServerError[] | null,
+) {
+    const messages = serverErrors
+        ?.map((serverError) => serverError.messages)
+        .filter(isDefined)
+        .join(' ');
+    return messages || error?.graphQLErrors?.[0]?.message || errorMessage;
 }
 
 export function getReadableFileSize(bytes: number | null | undefined): string {
@@ -105,7 +115,7 @@ export function validateFile(file: File, maxSize: number, accept: string | undef
     return undefined;
 }
 
-interface ServerError {
+export interface ServerError {
     field: string;
     messages: string | null;
     objectErrors?: ServerError[] | null;
