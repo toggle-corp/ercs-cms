@@ -1,6 +1,5 @@
 import {
     Button,
-    DateInput,
     TextInput,
 } from '@ifrc-go/ui';
 import { type EntriesAsList } from '@togglecorp/toggle-form';
@@ -19,18 +18,6 @@ function DocumentsFilters({
 }: Props) {
     return (
         <>
-            <DateInput
-                name="createdAtGte"
-                label="Created at start date"
-                value={value.createdAtGte}
-                onChange={onChange}
-            />
-            <DateInput
-                name="createdAtLte"
-                label="Created at end date"
-                value={value.createdAtLte}
-                onChange={onChange}
-            />
             <TextInput
                 name="title"
                 placeholder="Search by title"
