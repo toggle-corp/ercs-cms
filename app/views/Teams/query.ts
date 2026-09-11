@@ -51,14 +51,8 @@ const UPDATE_TEAM_MUTATION = gql`
 const DELETE_TEAM = gql`
     mutation DeleteTeam($id: ID!) {
         deleteTeam(id: $id) {
-            ... on TeamTypeMutationResponseType {
-                errors
-                ok
-                result {
-                    id
-                    name
-                }
-            }
+            errors
+            ok
         }
     }
 `;
@@ -105,14 +99,8 @@ const TEAM_MEMBER = gql`
 const DELETE_TEAM_MEMBER = gql`
     mutation DeleteTeamMember($id: ID!) {
         deleteTeamMember(id: $id) {
-            ... on TeamMemberTypeMutationResponseType {
-                errors
-                ok
-                result {
-                    id
-                    name
-                }
-            }
+            errors
+            ok
         }
     }
 `;

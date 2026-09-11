@@ -26,13 +26,8 @@ const EXTERNAL_DASHBOARDS = gql`
 const DELETE_EXTERNAL_DASHBOARD = gql`
     mutation DeleteExternalDashboard($id: ID!) {
         deleteExternalDashboard(id: $id) {
-            ... on ExternalDashboardTypeMutationResponseType {
-                errors
-                ok
-                result {
-                    id
-                }
-            }
+            errors
+            ok
         }
     }
 `;

@@ -22,13 +22,8 @@ const CAPACITY_AND_RESOURCES = gql`
 const DELETE_CAPACITY_AND_RESOURCE = gql`
     mutation DeleteCapacityAndResource($id: ID!) {
         deleteCapacityAndResource(id: $id) {
-            ... on CapacityAndResourceTypeMutationResponseType {
-                errors
-                ok
-                result {
-                    id
-                }
-            }
+            errors
+            ok
         }
     }
 `;
@@ -97,13 +92,8 @@ const RESOURCE_DASHBOARDS = gql`
 const DELETE_RESOURCE_DASHBOARD = gql`
     mutation DeleteResourceDashboard($id: ID!) {
         deleteExternalDashboard(id: $id) {
-            ... on ExternalDashboardTypeMutationResponseType {
-                errors
-                ok
-                result {
-                    id
-                }
-            }
+            errors
+            ok
         }
     }
 `;

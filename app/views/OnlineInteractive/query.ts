@@ -63,13 +63,8 @@ const UPDATE_ONLINE_INTERACTIVE = gql`
 const DELETE_ONLINE_INTERACTIVE = gql`
     mutation DeleteOnlineInteractive($id: ID!) {
         deleteReport(id: $id) {
-            ... on ReportTypeMutationResponseType {
-                errors
-                ok
-                result {
-                    id
-                }
-            }
+            errors
+            ok
         }
     }
 `;

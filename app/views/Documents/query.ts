@@ -19,13 +19,8 @@ const DOCUMENTS = gql`
 const DELETE_DOCUMENT = gql`
     mutation DeleteDocument($id: ID!) {
         deleteReport(id: $id) {
-            ... on ReportTypeMutationResponseType {
-                errors
-                ok
-                result {
-                    id
-                }
-            }
+            errors
+            ok
         }
     }
 `;

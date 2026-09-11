@@ -128,7 +128,7 @@ function PreparednessList() {
                     }
                     alert.show('Dashboard deleted successfully', { variant: 'success' });
                 } else {
-                    alert.show(getErrorMessage(resp.error), { variant: 'danger' });
+                    alert.show(getErrorMessage(resp.error, result?.errors), { variant: 'danger' });
                 }
             }).catch(() => {
                 alert.show(errorMessage, { variant: 'danger' });

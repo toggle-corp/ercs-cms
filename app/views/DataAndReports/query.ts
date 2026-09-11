@@ -24,13 +24,8 @@ const REPORTS = gql`
 const DELETE_REPORT = gql`
     mutation DeleteReport($id: ID!) {
         deleteReport(id: $id) {
-            ... on ReportTypeMutationResponseType {
-                errors
-                ok
-                result {
-                    id
-                }
-            }
+            errors
+            ok
         }
     }
 `;
