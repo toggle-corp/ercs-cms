@@ -1,4 +1,8 @@
-import { use } from 'react';
+import {
+    use,
+    useCallback,
+    useState,
+} from 'react';
 import {
     Navigate,
     Outlet,
@@ -16,6 +20,7 @@ import {
     ShareBoxLineIcon,
     ShieldStarLineIcon,
 } from '@ifrc-go/icons';
+import { _cs } from '@togglecorp/fujs';
 
 import Breadcrumbs from '#components/Breadcrumbs';
 import Navbar from '#components/Navbar';
@@ -23,8 +28,20 @@ import Navigation, { type NavigationItem } from '#components/Navigation';
 import Page from '#components/Page';
 import UserContext from '#contexts/UserContext';
 
+import styles from './styles.module.css';
+
 function PrivateLayout() {
     const { authenticated } = use(UserContext);
+    const [navShown, setNavShown] = useState(false);
+
+    const handleMenuButtonClick = useCallback(() => {
+        setNavShown((oldValue) => !oldValue);
+    }, []);
+
+    const handleNavigate = useCallback(() => {
+        setNavShown(false);
+    }, []);
+
     if (!authenticated) {
         return <Navigate to="/login" />;
     }
@@ -104,12 +121,20 @@ function PrivateLayout() {
 
     return (
         <>
-            <Navbar />
+            <Navbar
+                menuShown={navShown}
+                onMenuButtonClick={handleMenuButtonClick}
+            />
             <Page
                 leftPaneContent={(
                     <Navigation
                         navigationItem={navigationItem}
+                        onNavigate={handleNavigate}
                     />
+                )}
+                leftPaneContainerClassName={_cs(
+                    styles.navContainer,
+                    navShown && styles.navShown,
                 )}
             >
                 <Breadcrumbs />
