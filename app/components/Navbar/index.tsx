@@ -3,9 +3,14 @@ import {
     useCallback,
 } from 'react';
 import {
+    CloseLineIcon,
+    MenuLineIcon,
+} from '@ifrc-go/icons';
+import {
     Button,
     DropdownMenu,
     Heading,
+    IconButton,
     Image,
     InlineLayout,
     ListView,
@@ -28,7 +33,17 @@ const LOGOUT = gql`
     }
 `;
 
-function Navbar() {
+interface Props {
+    menuShown?: boolean;
+    onMenuButtonClick?: () => void;
+}
+
+function Navbar(props: Props) {
+    const {
+        menuShown,
+        onMenuButtonClick,
+    } = props;
+
     const { user, setUser } = use(UserContext);
     const alert = useAlert();
     const navigate = useRouting();
@@ -55,6 +70,20 @@ function Navbar() {
                     <ListView
                         withSpaceBetweenContents
                     >
+                        {onMenuButtonClick && (
+                            <div className={styles.menuButton}>
+                                <IconButton
+                                    name={undefined}
+                                    onClick={onMenuButtonClick}
+                                    title={menuShown ? 'Close menu' : 'Open menu'}
+                                    ariaLabel={menuShown ? 'Close menu' : 'Open menu'}
+                                    aria-expanded={menuShown}
+                                    variant="tertiary"
+                                >
+                                    {menuShown ? <CloseLineIcon /> : <MenuLineIcon />}
+                                </IconButton>
+                            </div>
+                        )}
                         <Link
                             to="home"
                         >

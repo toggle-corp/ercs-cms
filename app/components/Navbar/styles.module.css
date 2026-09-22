@@ -6,4 +6,17 @@
         width: var(--go-ui-height-brand-icon);
         height: var(--go-ui-height-brand-icon);
     }
+
+    .menu-button {
+        display: none;
+        flex-shrink: 0;
+    }
+}
+
+@media (width <= 40rem) {
+    .navbar {
+        .menu-button {
+            display: block;
+        }
+    }
 }

@@ -1,5 +1,6 @@
 .page {
     display: flex;
+    position: relative;
     flex-direction: row;
     flex-grow: 1;
     background: var(--go-ui-color-gray-10);
@@ -8,13 +9,10 @@
 
     .left-pane {
         display: flex;
-        position: sticky;
-        top: 0;
         flex: 0 0 16rem;
         flex-direction: column;
         background-color: var(--go-ui-color-white);
         gap: var(--go-ui-spacing-md);
-        width: 16rem;
         height: 100%;
         overflow-y: auto;
     }
